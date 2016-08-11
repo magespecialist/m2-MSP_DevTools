@@ -18,13 +18,11 @@
  * @copyright  Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
- -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="MSP_DevTools" setup_version="0.1.1">
-        <sequence>
-            <module name="MSP_Common"/>
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
 
-        </sequence>
-    </module>
-</config>
+    <head>
+        <css src="MSP_DevTools::msp_devtools/style.css"/>
+    </head>
+</page>

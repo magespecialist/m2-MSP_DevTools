@@ -28,6 +28,13 @@
             <tab>msp_common</tab>
             <resource>MSP_DevTools::config</resource>
             <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment><![CDATA[
+                    <div class="msp_devtools-general-comment">
+                        This module requires <strong><a target="_blank" href="https://chrome.google.com/webstore/detail/magespecialist-devtools-f/odbnbnenehdodpnebgldhhmicbnlmapj?authuser=3">MageSpecialist Chrome DevTools</a></strong> to be installed in your Chrome browser.<br />
+                        <a target="_blank" href="https://chrome.google.com/webstore/detail/magespecialist-devtools-f/odbnbnenehdodpnebgldhhmicbnlmapj?authuser=3">Click here</a> to install it from Chrome WebStore.<br />
+                        Source code, installation and configuration guide: <a target="_blank" href="https://github.com/magespecialist/mage-chrome-toolbar">https://github.com/magespecialist/mage-chrome-toolbar</a>.
+                    </div>
+                ]]></comment>
                 <label>General</label>
                 <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
@@ -40,6 +47,9 @@
             </group>
 
             <group id="phpstorm" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment><![CDATA[
+                    <strong>NOTE:</strong> You need to install <strong>Remote Call</strong> Plugin in your PhpStorm.
+                ]]></comment>
                 <label>PhpStorm Integration</label>
                 <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
