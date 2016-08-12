@@ -59,15 +59,7 @@ class LayoutPlugin
             return $html;
         }
 
-        try {
-            $doc = \phpQuery::newDocumentHTML($html);
-
-            $children = $doc->find('> *:not([data-mspdevtools])');
-            $children->attr('data-mspdevtools', $blockId);
-            $html = $doc->html();
-        } catch (\Exception $e) {
-            return $html;
-        }
+        $html = '<!-- MSPDEVTOOLS[' . $blockId . '] -->' . $html . '<!-- /MSPDEVTOOLS[' . $blockId . '] -->';
 
         return $html;
     }
