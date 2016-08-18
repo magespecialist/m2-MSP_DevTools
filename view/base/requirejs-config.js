@@ -20,6 +20,11 @@
 var config = {
     map: {
         '*': {
+            // For version 2.1.x
+            'Magento_Ui/js/lib/knockout/template/loader': 'MSP_DevTools/js/lib/knockout/template/loader',
+            'Core:Magento_Ui/js/lib/knockout/template/loader': 'Magento_Ui/js/lib/knockout/template/loader',
+
+            // For version 2.0.x
             'Magento_Ui/js/lib/ko/template/loader': 'MSP_DevTools/js/lib/ko/template/loader',
             'Core:Magento_Ui/js/lib/ko/template/loader': 'Magento_Ui/js/lib/ko/template/loader'
         }

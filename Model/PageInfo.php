@@ -20,9 +20,9 @@
 
 namespace MSP\DevTools\Model;
 
+use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\AppInterface;
 use Magento\Framework\Profiler\Driver\Standard\Stat;
 use Magento\Framework\View\DesignInterface;
 use Magento\Framework\View\LayoutInterface;
@@ -30,6 +30,7 @@ use MSP\DevTools\Helper\Data;
 
 class PageInfo
 {
+    protected $productMetadataInterface;
     protected $layoutInterface;
     protected $requestInterface;
     protected $httpRequest;
@@ -40,6 +41,7 @@ class PageInfo
     protected $stat;
 
     public function __construct(
+        ProductMetadataInterface $productMetadataInterface,
         LayoutInterface $layoutInterface,
         RequestInterface $requestInterface,
         EventRegistry $eventRegistry,
@@ -49,6 +51,7 @@ class PageInfo
         Data $dataHelper,
         Stat $stat
     ) {
+        $this->productMetadataInterface = $productMetadataInterface;
         $this->layoutInterface = $layoutInterface;
         $this->requestInterface = $requestInterface;
         $this->eventRegistry = $eventRegistry;
@@ -83,7 +86,7 @@ class PageInfo
                 [
                     'id' => 'version',
                     'label' => 'Version',
-                    'value' => AppInterface::VERSION
+                    'value' => $this->productMetadataInterface->getVersion(),
                 ], [
                     'id' => 'request',
                     'label' => 'Request',
