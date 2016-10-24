@@ -37,10 +37,9 @@ class Data extends AbstractHelper
     protected $remoteAddress;
 
     public function __construct(
-        Context $context,
-        ScopeConfigInterface $scopeConfigInterface
+        Context $context
     ) {
-        $this->scopeConfigInterface = $scopeConfigInterface;
+        $this->scopeConfigInterface = $context->getScopeConfig();
         $this->remoteAddress = $context->getRemoteAddress();
 
         parent::__construct($context);
