@@ -42,7 +42,7 @@
                 </field>
                 <field id="authorized_ranges" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Authorized IP list</label>
-                    <comment>(eg.: 192.168.1.10, 192.168.0.0/24)</comment>
+                    <comment>(eg.: 192.168.1.10, 192.168.0.0/24, 0.0.0.0/0)</comment>
                 </field>
             </group>
 

@@ -23,6 +23,10 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <msp_devtools>
+            <general>
+                <enabled>0</enabled>
+                <authorized_ranges>0.0.0.0/0</authorized_ranges>
+            </general>
             <phpstorm>
                 <enabled>0</enabled>
                 <port>8091</port>
