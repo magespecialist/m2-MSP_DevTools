@@ -12,10 +12,10 @@
  * obtain it through the world-wide-web, please send an email
  * to info@idealiagroup.com so we can send you a copy immediately.
  *
- * @category   MSP
- * @package    MSP_DevTools
- * @copyright  Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category  MSP
+ * @package   MSP_DevTools
+ * @copyright Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 namespace MSP\DevTools\Helper;
@@ -47,6 +47,7 @@ class Data extends AbstractHelper
 
     /**
      * Return true if phpstorm integration is enabled
+     *
      * @return boolean
      */
     public function getPhpStormEnabled()
@@ -56,6 +57,7 @@ class Data extends AbstractHelper
 
     /**
      * Return true if phpstorm integration port
+     *
      * @return int
      */
     public function getPhpStormPort()
@@ -69,7 +71,8 @@ class Data extends AbstractHelper
 
     /**
      * Get php storm URL
-     * @param $file
+     *
+     * @param  $file
      * @return string|null
      */
     public function getPhpStormUrl($file)
@@ -83,6 +86,7 @@ class Data extends AbstractHelper
 
     /**
      * Return true if devtools are enabled
+     *
      * @return boolean
      */
     public function getEnabled()
@@ -92,8 +96,9 @@ class Data extends AbstractHelper
 
     /**
      * Return true if IP is in range
-     * @param $ip
-     * @param $range
+     *
+     * @param  $ip
+     * @param  $range
      * @return bool
      */
     public function getIpInRange($ip, $range)
@@ -113,8 +118,9 @@ class Data extends AbstractHelper
 
     /**
      * Return true if IP is matched in a range list
-     * @param $ip
-     * @param array $ranges
+     *
+     * @param  $ip
+     * @param  array $ranges
      * @return bool
      */
     public function getIpIsMatched($ip, array $ranges)
@@ -130,6 +136,7 @@ class Data extends AbstractHelper
 
     /**
      * Return a list of allowed IPs
+     *
      * @return array
      */
     public function getAllowedRanges()
@@ -140,6 +147,7 @@ class Data extends AbstractHelper
 
     /**
      * Return true if debugger is active
+     *
      * @return boolean
      */
     public function isActive()

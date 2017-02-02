@@ -12,10 +12,10 @@
  * obtain it through the world-wide-web, please send an email
  * to info@idealiagroup.com so we can send you a copy immediately.
  *
- * @category   MSP
- * @package    MSP_DevTools
- * @copyright  Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category  MSP
+ * @package   MSP_DevTools
+ * @copyright Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 namespace MSP\DevTools\Plugin\Event;
@@ -43,7 +43,8 @@ class ManagerInterfacePlugin
         $this->helperData = $helperData;
     }
 
-    protected function _isActive() {
+    protected function isThisActive()
+    {
         if (is_null($this->isActive)) {
             $this->isActive = false; // This avoids recursion
             $this->isActive = $this->helperData->isActive();
@@ -58,7 +59,7 @@ class ManagerInterfacePlugin
         $eventName,
         array $data = []
     ) {
-        if (!$this->_isActive()) {
+        if (!$this->isThisActive()) {
             return $proceed($eventName, $data);
         }
 
@@ -71,9 +72,12 @@ class ManagerInterfacePlugin
 
         $this->eventRegistry->start($eventName);
         $res = $proceed($eventName, $data);
-        $this->eventRegistry->stop($eventName, [
+        $this->eventRegistry->stop(
+            $eventName,
+            [
             'observers' => $observers,
-        ]);        
+            ]
+        );
 
         return $res;
     }

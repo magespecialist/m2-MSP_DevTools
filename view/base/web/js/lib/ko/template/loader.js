@@ -11,90 +11,96 @@
  * obtain it through the world-wide-web, please send an email
  * to info@idealiagroup.com so we can send you a copy immediately.
  *
- * @category   MSP
- * @package    MSP_DevTools
- * @copyright  Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category  MSP
+ * @package   MSP_DevTools
+ * @copyright Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-define([
+define(
+    [
     'underscore',
     'jquery',
     'Core:Magento_Ui/js/lib/ko/template/loader'
-], function (_, $, CoreLoader) {
-    'use strict';
+    ],
+    function (_, $, CoreLoader) {
+        'use strict';
 
-    /**
+        /**
      * Formats path of type "path.to.template" to RequireJS compatible
+     *
      * @param  {String} path
      * @return {String} - formatted template path
      */
-    function formatTemplatePath(path) {
-        return 'text!' + path.replace(/^([^\/]+)/g, '$1/template') + '.html';
-    }
+        function formatTemplatePath(path)
+        {
+            return 'text!' + path.replace(/^([^\/]+)/g, '$1/template') + '.html';
+        }
 
-    /**
+        /**
      * Get a random block for MSP devtools
+     *
      * @returns {string}
      */
-    function getRandomBlockId() {
-        var text = "";
-        var possible = "abcdef0123456789";
+        function getRandomBlockId()
+        {
+            var text = "";
+            var possible = "abcdef0123456789";
 
-        for( var i=0; i < 32; i++ )
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
+            for (var i=0; i < 32; i++) {
+                text += possible.charAt(Math.floor(Math.random() * possible.length)); }
 
-        return text;
-    }
+            return text;
+        }
 
-    CoreLoader.loadTemplate = function (source) {
-        var isLoaded = $.Deferred();
+        CoreLoader.loadTemplate = function (source) {
+            var isLoaded = $.Deferred();
 
-        this._loadTemplate(source).done(function (tmpl) {
-            var mspBlockId = getRandomBlockId();
+            this._loadTemplate(source).done(
+                function (tmpl) {
+                    var mspBlockId = getRandomBlockId();
 
-            var payload = {
-                component: source,
-                template: formatTemplatePath(source).replace('text!', ''),
-                type: 'uiComponent',
-                id: mspBlockId
-            };
+                    var payload = {
+                        component: source,
+                        template: formatTemplatePath(source).replace('text!', ''),
+                        type: 'uiComponent',
+                        id: mspBlockId
+                    };
 
-            var fragmentsOut = [];
-            var fragmentsIn = _.toArray($.parseHTML(tmpl));
-            for (var i=0; i<fragmentsIn.length; i++) {
-                var node = fragmentsIn[i];
+                    var fragmentsOut = [];
+                    var fragmentsIn = _.toArray($.parseHTML(tmpl));
+                    for (var i=0; i<fragmentsIn.length; i++) {
+                        var node = fragmentsIn[i];
 
-                if (node.nodeType == 1) { // HTML node
-                    var $f = $(node);
-                    $f.attr('data-mspdevtools-ui', mspBlockId);
-                    fragmentsOut.push($f[0].outerHTML);
+                        if (node.nodeType == 1) { // HTML node
+                            var $f = $(node);
+                            $f.attr('data-mspdevtools-ui', mspBlockId);
+                            fragmentsOut.push($f[0].outerHTML);
+                        } else if (node.nodeType == 3) { // Text node
+                            fragmentsOut.push(node.value);
+                        } else if (node.nodeType == 8) { // Comment node
+                            fragmentsOut.push('<!-- ' + node.nodeValue + '-->');
+                        }
+                    }
 
-                } else if (node.nodeType == 3) { // Text node
-                    fragmentsOut.push(node.value);
+                    tmpl = fragmentsOut.join('');
+                    isLoaded.resolve(tmpl);
 
-                } else if (node.nodeType == 8) { // Comment node
-                    fragmentsOut.push('<!-- ' + node.nodeValue + '-->');
+                    if (!window.mspDevTools) {
+                        window.mspDevTools = {};
+                    }
+                    if (!window.mspDevTools['uiComponents']) {
+                        window.mspDevTools['uiComponents'] = {};
+                    }
 
+                    window.mspDevTools['uiComponents'][mspBlockId] = payload;
+                    window.postMessage('mspDevToolsUpdate', '*', []);
                 }
-            }
+            );
 
-            tmpl = fragmentsOut.join('');
-            isLoaded.resolve(tmpl);
+            return isLoaded.promise();
+        };
 
-            if (!window.mspDevTools) {
-                window.mspDevTools = {};
-            }
-            if (!window.mspDevTools['uiComponents']) {
-                window.mspDevTools['uiComponents'] = {};
-            }
-
-            window.mspDevTools['uiComponents'][mspBlockId] = payload;
-            window.postMessage('mspDevToolsUpdate', '*', []);
-        });
-
-        return isLoaded.promise();
-    };
-
-    return CoreLoader;
-});
+        return CoreLoader;
+    }
+);

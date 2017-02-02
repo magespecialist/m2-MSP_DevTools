@@ -12,10 +12,10 @@
  * obtain it through the world-wide-web, please send an email
  * to info@idealiagroup.com so we can send you a copy immediately.
  *
- * @category   MSP
- * @package    MSP_DevTools
- * @copyright  Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category  MSP
+ * @package   MSP_DevTools
+ * @copyright Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 namespace MSP\DevTools\Plugin\View;
@@ -49,11 +49,12 @@ class LayoutPlugin
 
     /**
      * Inject data-* attribute into html document
-     * @param $html
-     * @param $blockId
+     *
+     * @param  $html
+     * @param  $blockId
      * @return string
      */
-    protected function _injectHtmlAttribute($html, $blockId)
+    protected function injectHtmlAttribute($html, $blockId)
     {
         if (!$html) {
             return $html;
@@ -106,7 +107,6 @@ class LayoutPlugin
             if ($block instanceof Block) {
                 $payload['cms_block_id'] = $block->getData('block_id');
             }
-
         } else {
             $payload['type'] = 'container';
         }
@@ -114,6 +114,6 @@ class LayoutPlugin
         $blockId = $this->elementRegistry->getOpId();
         $this->elementRegistry->stop($name, $payload);
 
-        return $this->_injectHtmlAttribute($html, $blockId);
+        return $this->injectHtmlAttribute($html, $blockId);
     }
 }

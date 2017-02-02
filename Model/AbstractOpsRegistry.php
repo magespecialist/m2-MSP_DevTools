@@ -12,10 +12,10 @@
  * obtain it through the world-wide-web, please send an email
  * to info@idealiagroup.com so we can send you a copy immediately.
  *
- * @category   MSP
- * @package    MSP_DevTools
- * @copyright  Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category  MSP
+ * @package   MSP_DevTools
+ * @copyright Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 namespace MSP\DevTools\Model;
@@ -35,7 +35,8 @@ abstract class AbstractOpsRegistry
 
     /**
      * Start profiling operation
-     * @param $opName
+     *
+     * @param  $opName
      * @return $this
      */
     public function start($opName)
@@ -49,7 +50,8 @@ abstract class AbstractOpsRegistry
 
     /**
      * Get operation id
-     * @param $stack = null
+     *
+     * @param  $stack = null
      * @return string
      */
     public function getOpId($stack = null)
@@ -63,8 +65,9 @@ abstract class AbstractOpsRegistry
 
     /**
      * Stop profiling operation
-     * @param $opName
-     * @param $payload
+     *
+     * @param  $opName
+     * @param  $payload
      * @return $this
      * @throws \Exception
      */
@@ -99,6 +102,7 @@ abstract class AbstractOpsRegistry
 
     /**
      * Get event path stack
+     *
      * @return array
      */
     public function getStack()
@@ -108,6 +112,7 @@ abstract class AbstractOpsRegistry
 
     /**
      * Get registered ops
+     *
      * @return array
      */
     public function getRegisteredOps()
@@ -117,6 +122,7 @@ abstract class AbstractOpsRegistry
 
     /**
      * Calculate op timers
+     *
      * @return $this
      */
     public function calcTimers()

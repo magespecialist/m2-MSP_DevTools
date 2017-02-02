@@ -12,10 +12,10 @@
  * obtain it through the world-wide-web, please send an email
  * to info@idealiagroup.com so we can send you a copy immediately.
  *
- * @category   MSP
- * @package    MSP_DevTools
- * @copyright  Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category  MSP
+ * @package   MSP_DevTools
+ * @copyright Copyright (c) 2016 IDEALIAGroup srl (http://www.idealiagroup.com)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 namespace MSP\DevTools\Plugin\PhpEnvironment;
@@ -66,7 +66,6 @@ class ResponsePlugin
         $res = $proceed();
 
         if ($this->helperData->isActive()) {
-
             if (strtolower($this->http->getHeader('X-Requested-With')) != 'xmlhttprequest') {
                 if ($subject instanceof HttpResponse) {
                     $this->elementRegistry->calcTimers();
