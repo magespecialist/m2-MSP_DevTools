@@ -53,13 +53,13 @@ class LayoutPlugin
      * @param $blockId
      * @return string
      */
-    protected function _injectHtmlAttribute($html, $blockId)
+    protected function _injectHtmlAttribute($html, $blockId, $name)
     {
         if (!$html) {
             return $html;
         }
 
-        $html = '<!-- MSPDEVTOOLS[' . $blockId . '] -->' . $html . '<!-- /MSPDEVTOOLS[' . $blockId . '] -->';
+        $html = '<!--  [START: ' . $name . ']   MSPDEVTOOLS[' . $blockId . '] -->' . $html . '<!-- [END: ' . $name . ']    /MSPDEVTOOLS[' . $blockId . '] -->';
 
         return $html;
     }
@@ -114,6 +114,6 @@ class LayoutPlugin
         $blockId = $this->elementRegistry->getOpId();
         $this->elementRegistry->stop($name, $payload);
 
-        return $this->_injectHtmlAttribute($html, $blockId);
+        return $this->_injectHtmlAttribute($html, $blockId, $name);
     }
 }
