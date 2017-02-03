@@ -23,11 +23,11 @@ namespace MSP\DevTools\Model;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Interception\PluginList\PluginList;
 use Magento\Framework\Profiler\Driver\Standard\Stat;
 use Magento\Framework\View\DesignInterface;
 use Magento\Framework\View\LayoutInterface;
 use MSP\DevTools\Helper\Data;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Interception\DefinitionInterface;
 use Magento\Framework\App\ResourceConnection;
 
@@ -42,13 +42,9 @@ class PageInfo
     protected $elementRegistry;
     protected $dataHelper;
     protected $stat;
-    protected $types;
-    protected $sql_profiler;
     protected $resource;
-    protected $longestQueryTime = 0;
-    protected $shortestQueryTime = 100000;
-    protected $longestQuery;
-    protected $all_queries;
+    protected $pluginList;
+    protected $sqlProfiler;
 
     public function __construct(
         ProductMetadataInterface $productMetadataInterface,
@@ -60,7 +56,8 @@ class PageInfo
         Http $httpRequest,
         Data $dataHelper,
         Stat $stat,
-        ResourceConnection $resource
+        ResourceConnection $resource,
+        PluginList $pluginList
     ) {
         $this->productMetadataInterface = $productMetadataInterface;
         $this->layoutInterface = $layoutInterface;
@@ -72,6 +69,7 @@ class PageInfo
         $this->dataHelper = $dataHelper;
         $this->stat = $stat;
         $this->resource = $resource;
+        $this->pluginList = $pluginList;
     }
 
     /**
@@ -93,7 +91,6 @@ class PageInfo
             $themeInheritance[] = $theme->getCode();
             $theme = $theme->getParentTheme();
         }
-        $this->_initSqlProfilerData();
 
         $info = [
             'general' => [
@@ -151,7 +148,7 @@ class PageInfo
             'events' => $this->eventRegistry->getRegisteredOps(),
             'blocks' => $this->elementRegistry->getRegisteredOps(),
             'plugins' => $this->getPluginsList(),
-            'queries' => $this->all_queries,
+            'queries' => $this->getSqlProfilerData(),
             'version' => 2,
         ];
 
@@ -161,108 +158,172 @@ class PageInfo
 
     public function getPluginsList()
     {
-        $this->types =  [];
-        $pluginList = ObjectManager::getInstance()->get('Magento\Framework\Interception\PluginList\PluginList');
-        $reflection = new \ReflectionClass($pluginList);
+        $plugins = [];
+        $reflection = new \ReflectionClass($this->pluginList);
 
         $processed = $reflection->getProperty('_processed');
         $processed->setAccessible(true);
-        $processed = $processed->getValue($pluginList);
-
+        $processed = $processed->getValue($this->pluginList);
 
         $inherited = $reflection->getProperty('_inherited');
         $inherited->setAccessible(true);
-        $inherited = $inherited->getValue($pluginList);
+        $inherited = $inherited->getValue($this->pluginList);
 
-
-        $types = [DefinitionInterface::LISTENER_BEFORE=>'before',
-            DefinitionInterface::LISTENER_AROUND=>'around',
-            DefinitionInterface::LISTENER_AFTER=>'after'];
+        $types = [
+            DefinitionInterface::LISTENER_BEFORE => 'before',
+            DefinitionInterface::LISTENER_AROUND => 'around',
+            DefinitionInterface::LISTENER_AFTER => 'after'
+        ];
 
         /**
          * @see: Magento/Framework/Interception/PluginList/PluginList::_inheritPlugins($type)
          */
-        foreach($processed as $currentKey=>$processDef) {
-            if(preg_match('/^(.*)_(.*)___self$/', $currentKey, $matches) or preg_match('/^(.*?)_(.*?)_(.*)$/', $currentKey, $matches)) {
-                $type= $matches[1];
-                $method= $matches[2];
-                if(!empty($inherited[$type])) {
-                    foreach($processDef as $keyType=>$pluginsNames) {
-                        if(!is_array($pluginsNames)) {
+        foreach ($processed as $currentKey => $processDef) {
+            if (preg_match('/^(.*)_(.*)___self$/', $currentKey, $matches) ||
+                preg_match('/^(.*?)_(.*?)_(.*)$/', $currentKey, $matches)
+            ) {
+                $type = $matches[1];
+                $method = $matches[2];
+
+                if (!empty($inherited[$type])) {
+                    foreach($processDef as $keyType => $pluginsNames) {
+                        if (!is_array($pluginsNames)) {
                             $pluginsNames = [$pluginsNames];
                         }
 
-                        foreach($pluginsNames as $pluginName) {
-                            if(!empty($inherited[$type][$pluginName])) {
-                                $this->types[md5($pluginName)] = ['name'=>$pluginName, 'type'=>$type, 'plugin'=>$inherited[$type][$pluginName]['instance'], 'sort_order'=> $inherited[$type][$pluginName]['sortOrder'], 'method'=>$types[$keyType].ucfirst($method)];
+                        $classMethod = $type . '::' . $method;
+                        $key = md5($classMethod);
+
+                        if (!isset($plugins[$key])) {
+                            $fileName = $this->dataHelper->getPhpClassFile($type);
+
+                            $plugins[$key] = [
+                                'class_method' => $classMethod,
+                                'file' => $fileName,
+                                'phpstorm_url' => $this->dataHelper->getPhpStormUrl($fileName),
+                                'plugins' => [],
+                                'phpstorm_links' => [],
+                            ];
+
+                            if ($this->dataHelper->getPhpStormEnabled()) {
+                                $plugins[$key]['phpstorm_links'] = [
+                                    [
+                                        'key' => 'Original Class',
+                                        'file' => $fileName,
+                                        'link' => $this->dataHelper->getPhpStormUrl($fileName),
+                                    ],
+                                ];
+                            }
+                        };
+
+                        foreach ($pluginsNames as $pluginName) {
+                            if (!empty($inherited[$type][$pluginName])) {
+                                $sortOrder = intval($inherited[$type][$pluginName]['sortOrder']);
+
+                                $fileName = $this->dataHelper->getPhpClassFile(
+                                    $inherited[$type][$pluginName]['instance']
+                                );
+
+                                $plugins[$key]['plugins'][$pluginName] = [
+                                    'order' => $sortOrder,
+                                    'plugin' => $inherited[$type][$pluginName]['instance'],
+                                    'method' => $types[$keyType].ucfirst($method),
+                                    'file' => $fileName,
+                                ];
+                                if ($this->dataHelper->getPhpStormEnabled()) {
+                                    $plugins[$key]['phpstorm_links'][] = [
+                                        'key' => 'Plugin "'.$pluginName.'"',
+                                        'file' => $fileName,
+                                        'link' => $this->dataHelper->getPhpStormUrl($fileName),
+                                    ];
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        return $this->types;
+
+        return $plugins;
     }
 
-
-    public function _initSqlProfilerData()
+    protected function getSqlProfilerData()
     {
-        $this->all_queries = array();
-        $this->sql_profiler = new \Zend_Db_Profiler();
-        $this->sql_profiler = $this->resource->getConnection('read')->getProfiler();
-        if ($this->sql_profiler->getQueryProfiles() && is_array($this->sql_profiler->getQueryProfiles())) {
-            foreach ($this->sql_profiler->getQueryProfiles() as $query) {
-                if ($query->getElapsedSecs() > $this->longestQueryTime) {
-                    $this->longestQueryTime = $query->getElapsedSecs();
-                    $this->longestQuery = $query->getQuery();
+        $allQueries = [];
+        $sqlProfiler = $this->resource->getConnection('read')->getProfiler();
+
+        $longestQueryTime = 0;
+        $shortestQueryTime = 100000;
+
+        if ($sqlProfiler->getQueryProfiles() && is_array($sqlProfiler->getQueryProfiles())) {
+            foreach ($sqlProfiler->getQueryProfiles() as $query) {
+                if ($query->getElapsedSecs() > $longestQueryTime) {
+                    $longestQueryTime = $query->getElapsedSecs();
                 }
-                if ($query->getElapsedSecs() < $this->shortestQueryTime) {
-                    $this->shortestQueryTime = $query->getElapsedSecs();
+                if ($query->getElapsedSecs() < $shortestQueryTime) {
+                    $shortestQueryTime = $query->getElapsedSecs();
                 }
 
-                $this->all_queries[] = ['sql' => $this->formatSql($query->getQuery()), 'time' => $query->getElapsedSecs(), 'grade' => 'medium'];
+                if (in_array($query->getQuery(), ['commit', 'begin', 'connect'])) {
+                    continue;
+                }
+
+                $allQueries[] = [
+                    'sql' => $query->getQuery(),
+                    'time' => $query->getElapsedSecs(),
+                    'grade' => 'medium',
+                ];
             }
         }
-        if ($this->all_queries && !empty($this->all_queries)) {
+
+        if ($allQueries && !empty($allQueries)) {
             $standardDeviation = 0;
-            $average = $this->getAverage();
+
+            $totalNumQueries = $sqlProfiler->getTotalNumQueries(null);
+            $average = ($totalNumQueries && $sqlProfiler->getTotalElapsedSecs()) ?
+                $sqlProfiler->getTotalElapsedSecs() / $totalNumQueries : 0;
+
             $squareSum = 0;
-            foreach ($this->all_queries as $index=>$query) {
+
+            foreach ($allQueries as $index=>$query) {
                 $squareSum = pow($query['time'] - $average, 2);
             }
-            foreach ($this->all_queries as $index=>$query) {
-                $squareSum = pow($query['time'] - $average, 2);
+
+            if ($squareSum && $totalNumQueries) {
+                $standardDeviation = sqrt($squareSum / $totalNumQueries);
             }
-            if ($squareSum && $this->getTotalNumQueries()) {
-                $standardDeviation = sqrt($squareSum/$this->getTotalNumQueries());
-            }
-            foreach ($this->all_queries as $index=>$query) {
-                if($query['time']<($this->shortestQueryTime+2*$standardDeviation)) {
-                    $this->all_queries[$index]['grade'] = 'good';
-                } elseif($query['time']>($this->longestQueryTime-2*$standardDeviation)) {
-                    $this->all_queries[$index]['grade'] = 'bad';
+
+            foreach ($allQueries as $index => $query) {
+                if ($query['time'] < ($shortestQueryTime + 2*$standardDeviation)) {
+                    $allQueries[$index]['grade'] = 'good';
+                } elseif($query['time'] > ($longestQueryTime - 2*$standardDeviation)) {
+                    $allQueries[$index]['grade'] = 'bad';
                 }
-                $this->all_queries[$index]['time'] = $this->formatSqlTime($query['time']);
+
+                $allQueries[$index]['time'] = $this->formatSqlTime($query['time']);
             }
         }
-    }
 
-    public function getTotalNumQueries($queryType = null)
-    {
-        return $this->sql_profiler->getTotalNumQueries($queryType);
-    }
-
-    public function getAverage() {
-
-        return ($this->getTotalNumQueries() &&  $this->sql_profiler->getTotalElapsedSecs()) ?  $this->sql_profiler->getTotalElapsedSecs()/$this->getTotalNumQueries() : 0;
+        return $allQueries;
     }
 
     public function formatSql($sql)
     {
-        $htmlSql = $sql;
-        $htmlSql = preg_replace('/\b(SET|AS|ASC|COUNT|DESC|IN|LIKE|DISTINCT|INTO|VALUES|LIMIT)\b/', '<span class="sqlword">\\1</span>', $sql);
-        $htmlSql = preg_replace('/\b(UNION ALL|DESCRIBE|SHOW|connect|begin|commit)\b/', '<br/><span class="sqlother">\\1</span>', $htmlSql);
-        $htmlSql = preg_replace('/\b(UPDATE|SELECT|FROM|WHERE|LEFT JOIN|INNER JOIN|RIGHT JOIN|ORDER BY|GROUP BY|DELETE|INSERT)\b/', '<br/><span class="sqlmain">\\1</span>', $htmlSql);
+        $htmlSql = preg_replace(
+            '/\b(SET|AS|ASC|COUNT|DESC|IN|LIKE|DISTINCT|INTO|VALUES|LIMIT)\b/',
+            '<span class="sqlword">\\1</span>',
+            $sql
+        );
+        $htmlSql = preg_replace(
+            '/\b(UNION ALL|DESCRIBE|SHOW|connect|begin|commit)\b/',
+            '<br/><span class="sqlother">\\1</span>',
+            $htmlSql
+        );
+        $htmlSql = preg_replace(
+            '/\b(UPDATE|SELECT|FROM|WHERE|LEFT JOIN|INNER JOIN|RIGHT JOIN|ORDER BY|GROUP BY|DELETE|INSERT)\b/',
+            '<br/><span class="sqlmain">\\1</span>',
+            $htmlSql
+        );
         $htmlSql = preg_replace('/^<br\/>/', '', $htmlSql);
         return $htmlSql;
     }
@@ -270,10 +331,8 @@ class PageInfo
     public function formatSqlTime($time)
     {
         $decimals = 2;
-        $formatedTime = number_format(round(1000*$time,$decimals),$decimals);
+        $formattedTime = number_format(round(1000 * $time, $decimals), $decimals);
 
-        return $formatedTime;
+        return $formattedTime;
     }
-
-
 }

@@ -66,8 +66,24 @@ class ManagerInterfacePlugin
         // Retrieve called observer
         $observers = [];
         $observersConfig = $this->eventConfig->getObservers($eventName);
+
+        $phpStormLinks = [];
+
         foreach ($observersConfig as $observerConfig) {
-            $observers[$observerConfig['name']] = $observerConfig['instance'];
+            $fileName = $this->helperData->getPhpClassFile($observerConfig['instance']);
+
+            $observers[$observerConfig['name']] = [
+                'class' => $observerConfig['instance'],
+                'file' => $fileName,
+            ];
+
+            if ($this->helperData->getPhpStormEnabled()) {
+                $phpStormLinks[] = [
+                    'key' => 'Observer "'.$observerConfig['name'].'"',
+                    'file' => $fileName,
+                    'link' => $this->helperData->getPhpStormUrl($fileName),
+                ];
+            }
         }
 
         $this->eventRegistry->start($eventName);
@@ -75,7 +91,8 @@ class ManagerInterfacePlugin
         $this->eventRegistry->stop(
             $eventName,
             [
-            'observers' => $observers,
+                'observers' => $observers,
+                'phpstorm_links' => $phpStormLinks,
             ]
         );
 

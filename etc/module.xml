@@ -21,7 +21,7 @@
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="MSP_DevTools" setup_version="0.1.6">
+    <module name="MSP_DevTools" setup_version="0.2.0">
         <sequence>
             <module name="MSP_Common"/>
 

@@ -20,10 +20,10 @@
 
 namespace MSP\DevTools\Helper;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Framework\Autoload\AutoloaderRegistry;
+use Magento\Framework\App\Filesystem\DirectoryList;
 
 class Data extends AbstractHelper
 {
@@ -35,14 +35,32 @@ class Data extends AbstractHelper
 
     protected $scopeConfigInterface;
     protected $remoteAddress;
+    protected $directoryList;
 
     public function __construct(
-        Context $context
+        Context $context,
+        DirectoryList $directoryList
     ) {
         $this->scopeConfigInterface = $context->getScopeConfig();
         $this->remoteAddress = $context->getRemoteAddress();
 
         parent::__construct($context);
+        $this->directoryList = $directoryList;
+    }
+
+    /**
+     * Get PHP file path by class name
+     * @param string $className
+     * @return string
+     */
+    public function getPhpClassFile($className)
+    {
+        // @codingStandardsIgnoreStart
+        return substr(
+            realpath(AutoloaderRegistry::getAutoloader()->findFile($className)),
+            strlen($this->directoryList->getRoot())
+        );
+        // @codingStandardsIgnoreEnd
     }
 
     /**
