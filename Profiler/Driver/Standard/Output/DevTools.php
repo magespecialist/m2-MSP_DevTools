@@ -56,7 +56,10 @@ class DevTools extends AbstractOutput
                 // @codingStandardsIgnoreEnd
                 array_pop($parentPath);
                 $parentTimerId = md5(implode(Profiler::NESTING_SEPARATOR, $parentPath));
-                $profilerInfo[$parentTimerId]['proper_time'] -= $timerInfo['time'];
+
+                if (isset($profilerInfo[$parentTimerId])) {
+                    $profilerInfo[$parentTimerId]['proper_time'] -= $timerInfo['time'];
+                }
             }
         }
 
