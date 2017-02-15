@@ -27,21 +27,21 @@ define(
         'use strict';
 
         /**
-     * Formats path of type "path.to.template" to RequireJS compatible
-     *
-     * @param  {String} path
-     * @return {String} - formatted template path
-     */
+         * Formats path of type "path.to.template" to RequireJS compatible
+         *
+         * @param  {String} path
+         * @return {String} - formatted template path
+         */
         function formatTemplatePath(path)
         {
             return 'text!' + path.replace(/^([^\/]+)/g, '$1/template') + '.html';
         }
 
         /**
-     * Get a random block for MSP devtools
-     *
-     * @returns {string}
-     */
+         * Get a random block for MSP devtools
+         *
+         * @returns {string}
+         */
         function getRandomBlockId()
         {
             var text = "";
@@ -56,11 +56,16 @@ define(
         CoreLoader.loadTemplateOrig = CoreLoader.loadTemplate;
 
         CoreLoader.loadTemplate = function (path) {
-            var res = CoreLoader.loadTemplateOrig(path);
-            var defer = $.Deferred();
+            var content = CoreLoader.loadTemplateOrig(path);
 
-            if (res) {
-                res.done(
+            if (!window.mspDevTools) {
+                return content;
+            }
+
+            if (content) {
+                var defer = $.Deferred();
+
+                content.done(
                     function (tmpl) {
                         var mspBlockId = getRandomBlockId();
 
@@ -70,6 +75,9 @@ define(
                             type: 'uiComponent',
                             id: mspBlockId
                         };
+
+                        // we need this to prevent parseHTML to load images
+                        tmpl = tmpl.replace(/\s+src\s*=\s*/, " msp-tmp-src=");
 
                         var fragmentsOut = [];
                         var fragmentsIn = _.toArray($.parseHTML(tmpl));
@@ -88,6 +96,8 @@ define(
                         }
 
                         tmpl = fragmentsOut.join('');
+                        tmpl = tmpl.replace(/&lt;%=(.+?)%&gt;/, '<%=$1%>');
+                        tmpl = tmpl.replace(/\s+msp-tmp-src=/, " src=");
 
                         if (!window.mspDevTools) {
                             window.mspDevTools = {};
@@ -98,6 +108,7 @@ define(
 
                         window.mspDevTools['uiComponents'][mspBlockId] = payload;
                         window.postMessage('mspDevToolsUpdate', '*', []);
+
                         defer.resolve(tmpl);
                     }
                 );
@@ -105,7 +116,7 @@ define(
                 return defer.promise();
             }
 
-            return res;
+            return this.loadFromFile(path);
         };
 
         return CoreLoader;
