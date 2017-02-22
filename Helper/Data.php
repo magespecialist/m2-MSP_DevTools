@@ -22,6 +22,9 @@ namespace MSP\DevTools\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Autoload\AutoloaderRegistry;
 use Magento\Framework\App\Filesystem\DirectoryList;
 
@@ -33,19 +36,28 @@ class Data extends AbstractHelper
     const XML_PATH_PHPSTORM_ENABLED = 'msp_devtools/phpstorm/enabled';
     const XML_PATH_PHPSTORM_PORT = 'msp_devtools/phpstorm/port';
 
-    protected $scopeConfigInterface;
-    protected $remoteAddress;
-    protected $directoryList;
+    protected $_canInjectCode;
+
+    private $scopeConfigInterface;
+    private $remoteAddress;
+    private $directoryList;
+    private $request;
+    private $response;
+    private $http;
 
     public function __construct(
         Context $context,
-        DirectoryList $directoryList
+        DirectoryList $directoryList,
+        RequestInterface $request,
+        Http $http
     ) {
         $this->scopeConfigInterface = $context->getScopeConfig();
         $this->remoteAddress = $context->getRemoteAddress();
 
         parent::__construct($context);
         $this->directoryList = $directoryList;
+        $this->request = $request;
+        $this->http = $http;
     }
 
     /**
@@ -181,5 +193,31 @@ class Data extends AbstractHelper
         }
         
         return false;
+    }
+
+    /**
+     * Return true if can inject code
+     * @return bool
+     */
+    public function canInjectCode()
+    {
+        if (is_null($this->_canInjectCode)) {
+
+            $this->_canInjectCode = false;
+
+            if ($this->isActive()) {
+                $requestedWith = strtolower($this->http->getHeader('X-Requested-With'));
+
+                if (
+                    (!$this->request->getParam('isAjax') || ($this->request->getParam('isAjax') == 'false')) &&
+                    ($requestedWith != 'xmlhttprequest') &&
+                    (strpos($requestedWith, 'shockwaveflash') === false)
+                ) {
+                    $this->_canInjectCode = true;
+                }
+            }
+        }
+
+        return $this->_canInjectCode;
     }
 }

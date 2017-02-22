@@ -56,7 +56,7 @@ class LayoutPlugin
      */
     protected function injectHtmlAttribute($html, $blockId)
     {
-        if (!$html) {
+        if (!$html || !$this->helperData->canInjectCode()) {
             return $html;
         }
 

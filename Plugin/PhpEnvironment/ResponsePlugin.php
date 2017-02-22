@@ -20,9 +20,9 @@
 
 namespace MSP\DevTools\Plugin\PhpEnvironment;
 
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\App\Request\Http;
-use Magento\Framework\Profiler;
 use Magento\Framework\Profiler\Driver\Standard as StandardProfiler;
 use MSP\DevTools\Helper\Data;
 use MSP\DevTools\Model\PageInfo;
@@ -33,13 +33,14 @@ use MSP\DevTools\Model\EventRegistry;
 
 class ResponsePlugin
 {
-    protected $encoderInterface;
-    protected $elementRegistry;
-    protected $eventRegistry;
-    protected $pageInfo;
-    protected $standardProfiler;
-    protected $http;
-    protected $helperData;
+    private $encoderInterface;
+    private $elementRegistry;
+    private $eventRegistry;
+    private $pageInfo;
+    private $standardProfiler;
+    private $http;
+    private $helperData;
+    private $request;
 
     public function __construct(
         EncoderInterface $encoderInterface,
@@ -48,6 +49,7 @@ class ResponsePlugin
         PageInfo $pageInfo,
         Http $http,
         StandardProfiler $standardProfiler,
+        RequestInterface $request,
         Data $helperData
     ) {
         $this->encoderInterface = $encoderInterface;
@@ -57,6 +59,7 @@ class ResponsePlugin
         $this->standardProfiler = $standardProfiler;
         $this->helperData = $helperData;
         $this->http = $http;
+        $this->request = $request;
     }
 
     public function aroundSendContent(
@@ -65,22 +68,26 @@ class ResponsePlugin
     ) {
         $res = $proceed();
 
-        if ($this->helperData->isActive()) {
-            if (strtolower($this->http->getHeader('X-Requested-With')) != 'xmlhttprequest') {
-                if ($subject instanceof HttpResponse) {
-                    $this->elementRegistry->calcTimers();
-                    $this->eventRegistry->calcTimers();
+        if ($this->helperData->canInjectCode()) {
+            if ($subject instanceof HttpResponse) {
+                $this->elementRegistry->calcTimers();
+                $this->eventRegistry->calcTimers();
 
-                    $pageInfo = $this->pageInfo->getPageInfo();
-                    // @codingStandardsIgnoreStart
-                    echo '<script type="text/javascript">';
-                    echo 'if (!window.mspDevTools) { window.mspDevTools = {}; }';
-                    foreach ($pageInfo as $key => $info) {
-                        echo 'window.mspDevTools["' . $key . '"] = ' . $this->encoderInterface->encode($info) . ';';
-                    }
-                    echo '</script>';
-                    // @codingStandardsIgnoreEnd
+                $pageInfo = $this->pageInfo->getPageInfo();
+                // @codingStandardsIgnoreStart
+                echo '<script type="text/javascript">';
+                echo 'if (!window.mspDevTools) { window.mspDevTools = {}; }';
+                foreach ($pageInfo as $key => $info) {
+                    echo 'window.mspDevTools["' . $key . '"] = ' . $this->encoderInterface->encode($info) . ';';
                 }
+                echo '</script>';
+
+                // We must use superglobals since profiler classes cannot access to object manager or DI system
+                // See \MSP\DevTools\Profiler\Driver\Standard\Output\DevTools
+                $GLOBALS['msp_devtools_profiler'] = true;
+                // @codingStandardsIgnoreEnd
+
+
             }
         }
 
