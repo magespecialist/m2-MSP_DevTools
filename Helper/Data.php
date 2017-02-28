@@ -23,8 +23,6 @@ namespace MSP\DevTools\Helper;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\Request\Http;
-use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Autoload\AutoloaderRegistry;
 use Magento\Framework\App\Filesystem\DirectoryList;
 
@@ -42,13 +40,11 @@ class Data extends AbstractHelper
     private $remoteAddress;
     private $directoryList;
     private $request;
-    private $response;
     private $http;
 
     public function __construct(
         Context $context,
         DirectoryList $directoryList,
-        RequestInterface $request,
         Http $http
     ) {
         $this->scopeConfigInterface = $context->getScopeConfig();
@@ -56,7 +52,7 @@ class Data extends AbstractHelper
 
         parent::__construct($context);
         $this->directoryList = $directoryList;
-        $this->request = $request;
+        $this->request = $context->getRequest();
         $this->http = $http;
     }
 
