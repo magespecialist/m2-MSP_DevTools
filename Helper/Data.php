@@ -90,7 +90,7 @@ class Data extends AbstractHelper
     {
         $port = intval($this->scopeConfigInterface->getValue(self::XML_PATH_PHPSTORM_PORT));
         if (!$port) {
-            $port = 8091;
+            $port = 63342;
         }
         return $port;
     }
@@ -107,7 +107,7 @@ class Data extends AbstractHelper
             return null;
         }
 
-        return 'http://127.0.0.1:'.$this->getPhpStormPort().'?message='.urlencode($file);
+        return 'http://127.0.0.1:' . $this->getPhpStormPort() . '/api/file' . $file;
     }
 
     /**
