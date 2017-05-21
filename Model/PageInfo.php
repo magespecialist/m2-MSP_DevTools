@@ -27,46 +27,88 @@ use Magento\Framework\Interception\PluginList\PluginList;
 use Magento\Framework\Profiler\Driver\Standard\Stat;
 use Magento\Framework\View\DesignInterface;
 use Magento\Framework\View\LayoutInterface;
-use MSP\DevTools\Helper\Data;
 use Magento\Framework\Interception\DefinitionInterface;
 use Magento\Framework\App\ResourceConnection;
 
 class PageInfo
 {
-    protected $productMetadataInterface;
-    protected $layoutInterface;
-    protected $requestInterface;
-    protected $httpRequest;
-    protected $eventRegistry;
-    protected $designInterface;
-    protected $elementRegistry;
-    protected $dataHelper;
-    protected $stat;
-    protected $resource;
-    protected $pluginList;
-    protected $sqlProfiler;
+    /**
+     * @var ProductMetadataInterface
+     */
+    private $productMetadata;
+
+    /**
+     * @var LayoutInterface
+     */
+    private $layout;
+
+    /**
+     * @var RequestInterface
+     */
+    private $request;
+
+    /**
+     * @var EventRegistry
+     */
+    private $eventRegistry;
+
+    /**
+     * @var ElementRegistry
+     */
+    private $elementRegistry;
+
+    /**
+     * @var DesignInterface
+     */
+    private $design;
+
+    /**
+     * @var Http
+     */
+    private $httpRequest;
+
+    /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @var Stat
+     */
+    private $stat;
+
+    /**
+     * @var ResourceConnection
+     */
+    private $resource;
+
+    /**
+     * @var PluginList
+     */
+    private $pluginList;
 
     public function __construct(
-        ProductMetadataInterface $productMetadataInterface,
-        LayoutInterface $layoutInterface,
-        RequestInterface $requestInterface,
+        ProductMetadataInterface $productMetadata,
+        LayoutInterface $layout,
+        RequestInterface $request,
         EventRegistry $eventRegistry,
         ElementRegistry $elementRegistry,
         DesignInterface $designInterface,
         Http $httpRequest,
-        Data $dataHelper,
+        Config $config,
         Stat $stat,
         ResourceConnection $resource,
         PluginList $pluginList
     ) {
-        $this->productMetadataInterface = $productMetadataInterface;
-        $this->layoutInterface = $layoutInterface;
-        $this->requestInterface = $requestInterface;
+
+        $this->productMetadata = $productMetadata;
+        $this->layout = $layout;
+        $this->request = $request;
         $this->eventRegistry = $eventRegistry;
-        $this->httpRequest = $httpRequest;
-        $this->designInterface = $designInterface;
         $this->elementRegistry = $elementRegistry;
-        $this->dataHelper = $dataHelper;
+        $this->design = $designInterface;
+        $this->httpRequest = $httpRequest;
+        $this->config = $config;
         $this->stat = $stat;
         $this->resource = $resource;
         $this->pluginList = $pluginList;
@@ -79,10 +121,10 @@ class PageInfo
      */
     public function getPageInfo()
     {
-        $layoutUpdates = $this->layoutInterface->getUpdate();
-        $request = $this->requestInterface;
+        $layoutUpdates = $this->layout->getUpdate();
+        $request = $this->request;
         $httpRequest = $this->httpRequest;
-        $design = $this->designInterface;
+        $design = $this->design;
 
         $themeInheritance = [];
 
@@ -97,7 +139,7 @@ class PageInfo
                 [
                     'id' => 'version',
                     'label' => 'Version',
-                    'value' => $this->productMetadataInterface->getVersion(),
+                    'value' => $this->productMetadata->getVersion(),
                 ], [
                     'id' => 'request',
                     'label' => 'Request',
@@ -195,22 +237,22 @@ class PageInfo
                         $key = md5($classMethod);
 
                         if (!isset($plugins[$key])) {
-                            $fileName = $this->dataHelper->getPhpClassFile($type);
+                            $fileName = $this->config->getPhpClassFile($type);
 
                             $plugins[$key] = [
                                 'class_method' => $classMethod,
                                 'file' => $fileName,
-                                'phpstorm_url' => $this->dataHelper->getPhpStormUrl($fileName),
+                                'phpstorm_url' => $this->config->getPhpStormUrl($fileName),
                                 'plugins' => [],
                                 'phpstorm_links' => [],
                             ];
 
-                            if ($this->dataHelper->getPhpStormEnabled()) {
+                            if ($this->config->getPhpStormEnabled()) {
                                 $plugins[$key]['phpstorm_links'] = [
                                     [
                                         'key' => 'Original Class',
                                         'file' => $fileName,
-                                        'link' => $this->dataHelper->getPhpStormUrl($fileName),
+                                        'link' => $this->config->getPhpStormUrl($fileName),
                                     ],
                                 ];
                             }
@@ -220,7 +262,7 @@ class PageInfo
                             if (!empty($inherited[$type][$pluginName])) {
                                 $sortOrder = intval($inherited[$type][$pluginName]['sortOrder']);
 
-                                $fileName = $this->dataHelper->getPhpClassFile(
+                                $fileName = $this->config->getPhpClassFile(
                                     $inherited[$type][$pluginName]['instance']
                                 );
 
@@ -230,11 +272,11 @@ class PageInfo
                                     'method' => $types[$keyType].ucfirst($method),
                                     'file' => $fileName,
                                 ];
-                                if ($this->dataHelper->getPhpStormEnabled()) {
+                                if ($this->config->getPhpStormEnabled()) {
                                     $plugins[$key]['phpstorm_links'][] = [
                                         'key' => 'Plugin "'.$pluginName.'"',
                                         'file' => $fileName,
-                                        'link' => $this->dataHelper->getPhpStormUrl($fileName),
+                                        'link' => $this->config->getPhpStormUrl($fileName),
                                     ];
                                 }
                             }

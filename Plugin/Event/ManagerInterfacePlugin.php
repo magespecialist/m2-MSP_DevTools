@@ -22,32 +22,43 @@ namespace MSP\DevTools\Plugin\Event;
 
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Event\ConfigInterface;
-use MSP\DevTools\Helper\Data;
+use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\EventRegistry;
 
 class ManagerInterfacePlugin
 {
-    protected $eventRegistry;
-    protected $eventConfig;
-    protected $helperData;
-
     protected $isActive = null;
+    /**
+     * @var EventRegistry
+     */
+    private $eventRegistry;
+
+    /**
+     * @var ConfigInterface
+     */
+    private $eventConfig;
+
+    /**
+     * @var Config
+     */
+    private $config;
 
     public function __construct(
         EventRegistry $eventRegistry,
         ConfigInterface $eventConfig,
-        Data $helperData
+        Config $config
     ) {
+
         $this->eventRegistry = $eventRegistry;
         $this->eventConfig = $eventConfig;
-        $this->helperData = $helperData;
+        $this->config = $config;
     }
 
     protected function isThisActive()
     {
         if (is_null($this->isActive)) {
             $this->isActive = false; // This avoids recursion
-            $this->isActive = $this->helperData->isActive();
+            $this->isActive = $this->config->isActive();
         }
 
         return $this->isActive;
@@ -70,18 +81,18 @@ class ManagerInterfacePlugin
         $phpStormLinks = [];
 
         foreach ($observersConfig as $observerConfig) {
-            $fileName = $this->helperData->getPhpClassFile($observerConfig['instance']);
+            $fileName = $this->config->getPhpClassFile($observerConfig['instance']);
 
             $observers[$observerConfig['name']] = [
                 'class' => $observerConfig['instance'],
                 'file' => $fileName,
             ];
 
-            if ($this->helperData->getPhpStormEnabled()) {
+            if ($this->config->getPhpStormEnabled()) {
                 $phpStormLinks[] = [
                     'key' => 'Observer "'.$observerConfig['name'].'"',
                     'file' => $fileName,
-                    'link' => $this->helperData->getPhpStormUrl($fileName),
+                    'link' => $this->config->getPhpStormUrl($fileName),
                 ];
             }
         }

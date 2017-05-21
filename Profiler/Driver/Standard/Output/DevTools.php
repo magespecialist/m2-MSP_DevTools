@@ -30,6 +30,7 @@ class DevTools extends AbstractOutput
     {
         // @codingStandardsIgnoreStart
         // We must use superglobals since profiler classes cannot access to object manager or DI system
+        // I know this is terrible and I feed bad for this, I'm still crying... any better idea?
         if ($GLOBALS['msp_devtools_profiler']) {
             // @codingStandardsIgnoreEnd
 
@@ -74,6 +75,8 @@ class DevTools extends AbstractOutput
             }
 
             // @codingStandardsIgnoreStart
+            // I know, this piece of code is terrible... using "echo" in Magento? Are you crazy or what?
+            // Do you have any better idea to raw output here?
             echo
                 '<script type="text/javascript">'
                 . 'if (!window.mspDevTools) { window.mspDevTools = {}; }'

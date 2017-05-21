@@ -25,26 +25,42 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Interception\InterceptorInterface;
 use Magento\Framework\Json\EncoderInterface;
 use Magento\Framework\View\Layout;
-use MSP\DevTools\Helper\Data;
+use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\ElementRegistry;
 
 class LayoutPlugin
 {
-    protected $elementRegistry;
-    protected $encoderInterface;
-    protected $directoryList;
-    protected $helperData;
+    /**
+     * @var ElementRegistry
+     */
+    private $elementRegistry;
+
+    /**
+     * @var EncoderInterface
+     */
+    private $encoder;
+
+    /**
+     * @var DirectoryList
+     */
+    private $directoryList;
+
+    /**
+     * @var Config
+     */
+    private $config;
 
     public function __construct(
         ElementRegistry $elementRegistry,
-        EncoderInterface $encoderInterface,
+        EncoderInterface $encoder,
         DirectoryList $directoryList,
-        Data $helperData
+        Config $config
     ) {
+
         $this->elementRegistry = $elementRegistry;
-        $this->encoderInterface = $encoderInterface;
+        $this->encoder = $encoder;
         $this->directoryList = $directoryList;
-        $this->helperData = $helperData;
+        $this->config = $config;
     }
 
     /**
@@ -56,7 +72,7 @@ class LayoutPlugin
      */
     protected function injectHtmlAttribute($html, $blockId)
     {
-        if (!$html || !$this->helperData->canInjectCode()) {
+        if (!$html || !$this->config->canInjectCode()) {
             return $html;
         }
 
@@ -67,7 +83,7 @@ class LayoutPlugin
 
     public function aroundRenderElement(Layout $subject, \Closure $proceed, $name, $useCache = true)
     {
-        if (!$this->helperData->isActive()) {
+        if (!$this->config->isActive()) {
             return $proceed($name, $useCache);
         }
         
@@ -93,28 +109,28 @@ class LayoutPlugin
 
             $payload['type'] = 'block';
             $payload['class'] = $block instanceof InterceptorInterface ? get_parent_class($block) : get_class($block);
-            $payload['file'] = $this->helperData->getPhpClassFile($payload['class']);
+            $payload['file'] = $this->config->getPhpClassFile($payload['class']);
 
-            if ($this->helperData->getPhpStormEnabled()) {
+            if ($this->config->getPhpStormEnabled()) {
                 $phpStormLinks[] = [
                     'key' => 'Block Class',
                     'file' => $payload['file'],
-                    'link' => $this->helperData->getPhpStormUrl($payload['file']),
+                    'link' => $this->config->getPhpStormUrl($payload['file']),
                 ];
             }
 
             $payload['template'] = $block->getTemplate();
             if ($payload['template']) {
                 $payload['template_file'] = substr($block->getTemplateFile(), strlen($this->directoryList->getRoot()));
-                $phpStormUrl = $this->helperData->getPhpStormUrl($payload['template_file']);
+                $phpStormUrl = $this->config->getPhpStormUrl($payload['template_file']);
                 if ($phpStormUrl) {
                     $payload['phpstorm_url'] = $phpStormUrl;
 
-                    if ($this->helperData->getPhpStormEnabled()) {
+                    if ($this->config->getPhpStormEnabled()) {
                         $phpStormLinks[] = [
                             'key' => 'Template File',
                             'file' => $payload['template_file'],
-                            'link' => $this->helperData->getPhpStormUrl($payload['template_file']),
+                            'link' => $this->config->getPhpStormUrl($payload['template_file']),
                         ];
                     }
                 }

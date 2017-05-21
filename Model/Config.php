@@ -18,15 +18,16 @@
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-namespace MSP\DevTools\Helper;
+namespace MSP\DevTools\Model;
 
-use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Request\Http;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Autoload\AutoloaderRegistry;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 
-class Data extends AbstractHelper
+class Config
 {
     const XML_PATH_GENERAL_ENABLED = 'msp_devtools/general/enabled';
     const XML_PATH_GENERAL_AUTHORIZED_IPS = 'msp_devtools/general/authorized_ranges';
@@ -34,26 +35,46 @@ class Data extends AbstractHelper
     const XML_PATH_PHPSTORM_ENABLED = 'msp_devtools/phpstorm/enabled';
     const XML_PATH_PHPSTORM_PORT = 'msp_devtools/phpstorm/port';
 
-    protected $_canInjectCode;
+    protected $canInjectCode;
 
-    private $scopeConfigInterface;
+    /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    /**
+     * @var RemoteAddress
+     */
     private $remoteAddress;
+
+    /**
+     * @var DirectoryList
+     */
     private $directoryList;
-    private $request;
+
+    /**
+     * @var Http
+     */
     private $http;
+    /**
+     * @var RequestInterface
+     */
+    private $request;
+
 
     public function __construct(
-        Context $context,
+        ScopeConfigInterface $scopeConfig,
+        RequestInterface $request,
+        RemoteAddress $remoteAddress,
         DirectoryList $directoryList,
         Http $http
     ) {
-        $this->scopeConfigInterface = $context->getScopeConfig();
-        $this->remoteAddress = $context->getRemoteAddress();
 
-        parent::__construct($context);
+        $this->scopeConfig = $scopeConfig;
+        $this->remoteAddress = $remoteAddress;
         $this->directoryList = $directoryList;
-        $this->request = $context->getRequest();
         $this->http = $http;
+        $this->request = $request;
     }
 
     /**
@@ -78,7 +99,7 @@ class Data extends AbstractHelper
      */
     public function getPhpStormEnabled()
     {
-        return (bool) $this->scopeConfigInterface->getValue(self::XML_PATH_PHPSTORM_ENABLED);
+        return (bool) $this->scopeConfig->getValue(self::XML_PATH_PHPSTORM_ENABLED);
     }
 
     /**
@@ -88,7 +109,7 @@ class Data extends AbstractHelper
      */
     public function getPhpStormPort()
     {
-        $port = intval($this->scopeConfigInterface->getValue(self::XML_PATH_PHPSTORM_PORT));
+        $port = intval($this->scopeConfig->getValue(self::XML_PATH_PHPSTORM_PORT));
         if (!$port) {
             $port = 8091;
         }
@@ -117,7 +138,7 @@ class Data extends AbstractHelper
      */
     public function getEnabled()
     {
-        return (bool) $this->scopeConfigInterface->getValue(self::XML_PATH_GENERAL_ENABLED);
+        return (bool) $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLED);
     }
 
     /**
@@ -167,7 +188,7 @@ class Data extends AbstractHelper
      */
     public function getAllowedRanges()
     {
-        $ranges = $this->scopeConfigInterface->getValue(self::XML_PATH_GENERAL_AUTHORIZED_IPS);
+        $ranges = $this->scopeConfig->getValue(self::XML_PATH_GENERAL_AUTHORIZED_IPS);
         return preg_split('/\s*[,;]+\s*/', $ranges);
     }
 
@@ -187,7 +208,7 @@ class Data extends AbstractHelper
                 return $this->getIpIsMatched($ip, $allowedRanges);
             }
         }
-        
+
         return false;
     }
 
@@ -197,9 +218,9 @@ class Data extends AbstractHelper
      */
     public function canInjectCode()
     {
-        if (is_null($this->_canInjectCode)) {
+        if (is_null($this->canInjectCode)) {
 
-            $this->_canInjectCode = false;
+            $this->canInjectCode = false;
 
             if ($this->isActive()) {
                 $requestedWith = strtolower($this->http->getHeader('X-Requested-With'));
@@ -209,11 +230,11 @@ class Data extends AbstractHelper
                     ($requestedWith != 'xmlhttprequest') &&
                     (strpos($requestedWith, 'shockwaveflash') === false)
                 ) {
-                    $this->_canInjectCode = true;
+                    $this->canInjectCode = true;
                 }
             }
         }
 
-        return $this->_canInjectCode;
+        return $this->canInjectCode;
     }
 }

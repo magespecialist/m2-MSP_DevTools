@@ -136,7 +136,9 @@ abstract class AbstractOpsRegistry
                 array_pop($parentStack);
 
                 $parentOpId = $this->getOpId($parentStack);
-                $this->registeredOps[$parentOpId]['proper_time'] -= $this->registeredOps[$opId]['time'];
+                if (isset($this->registeredOps[$parentOpId]['proper_time'])) {
+                    $this->registeredOps[$parentOpId]['proper_time'] -= $this->registeredOps[$opId]['time'];
+                }
             }
             // @codingStandardsIgnoreEnd
         }

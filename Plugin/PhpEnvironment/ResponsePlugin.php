@@ -24,7 +24,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Profiler\Driver\Standard as StandardProfiler;
-use MSP\DevTools\Helper\Data;
+use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\PageInfo;
 use Zend\Http\PhpEnvironment\Response;
 use Magento\Framework\Json\EncoderInterface;
@@ -33,33 +33,66 @@ use MSP\DevTools\Model\EventRegistry;
 
 class ResponsePlugin
 {
-    private $encoderInterface;
+    /**
+     * @var EncoderInterface
+     */
+    private $encoder;
+
+    /**
+     * @var ElementRegistry
+     */
     private $elementRegistry;
+
+    /**
+     * @var EventRegistry
+     */
     private $eventRegistry;
+
+    /**
+     * @var PageInfo
+     */
     private $pageInfo;
-    private $standardProfiler;
+
+    /**
+     * @var Http
+     */
     private $http;
-    private $helperData;
+
+    /**
+     * @var StandardProfiler
+     */
+    private $standardProfiler;
+
+    /**
+     * @var RequestInterface
+     */
     private $request;
 
+    /**
+     * @var Config
+     */
+    private $config;
+
     public function __construct(
-        EncoderInterface $encoderInterface,
+        EncoderInterface $encoder,
         ElementRegistry $elementRegistry,
         EventRegistry $eventRegistry,
         PageInfo $pageInfo,
         Http $http,
         StandardProfiler $standardProfiler,
         RequestInterface $request,
-        Data $helperData
+        Config $config
     ) {
-        $this->encoderInterface = $encoderInterface;
+
+
+        $this->encoder = $encoder;
         $this->elementRegistry = $elementRegistry;
         $this->eventRegistry = $eventRegistry;
         $this->pageInfo = $pageInfo;
-        $this->standardProfiler = $standardProfiler;
-        $this->helperData = $helperData;
         $this->http = $http;
+        $this->standardProfiler = $standardProfiler;
         $this->request = $request;
+        $this->config = $config;
     }
 
     public function aroundSendContent(
@@ -68,17 +101,19 @@ class ResponsePlugin
     ) {
         $res = $proceed();
 
-        if ($this->helperData->canInjectCode()) {
+        if ($this->config->canInjectCode()) {
             if ($subject instanceof HttpResponse) {
                 $this->elementRegistry->calcTimers();
                 $this->eventRegistry->calcTimers();
 
                 $pageInfo = $this->pageInfo->getPageInfo();
                 // @codingStandardsIgnoreStart
+                // Yes, ok, sorry for this... the only way I found to raw output here is to use "echo"
+                // Any better idea is highly appreciated.
                 echo '<script type="text/javascript">';
                 echo 'if (!window.mspDevTools) { window.mspDevTools = {}; }';
                 foreach ($pageInfo as $key => $info) {
-                    echo 'window.mspDevTools["' . $key . '"] = ' . $this->encoderInterface->encode($info) . ';';
+                    echo 'window.mspDevTools["' . $key . '"] = ' . $this->encoder->encode($info) . ';';
                 }
                 echo '</script>';
 
