@@ -72,13 +72,13 @@ define(
                     for (var i=0; i<fragmentsIn.length; i++) {
                         var node = fragmentsIn[i];
 
-                        if (node.nodeType == 1) { // HTML node
+                        if (node.nodeType === 1) { // HTML node
                             var $f = $(node);
                             $f.attr('data-mspdevtools-ui', mspBlockId);
                             fragmentsOut.push($f[0].outerHTML);
-                        } else if (node.nodeType == 3) { // Text node
+                        } else if (node.nodeType === 3) { // Text node
                             fragmentsOut.push(node.value);
-                        } else if (node.nodeType == 8) { // Comment node
+                        } else if (node.nodeType === 8) { // Comment node
                             fragmentsOut.push('<!-- ' + node.nodeValue + '-->');
                         }
                     }

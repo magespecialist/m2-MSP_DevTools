@@ -115,6 +115,7 @@ class ResponsePlugin
                 foreach ($pageInfo as $key => $info) {
                     echo 'window.mspDevTools["' . $key . '"] = ' . $this->encoder->encode($info) . ';';
                 }
+                echo 'window.mspDevTools["_protocol"] = ' . Config::PROTOCOL_VERSION . ';';
                 echo '</script>';
 
                 // We must use superglobals since profiler classes cannot access to object manager or DI system

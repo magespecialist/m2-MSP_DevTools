@@ -29,6 +29,8 @@ use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 
 class Config
 {
+    const PROTOCOL_VERSION = 2;
+
     const XML_PATH_GENERAL_ENABLED = 'msp_devtools/general/enabled';
     const XML_PATH_GENERAL_AUTHORIZED_IPS = 'msp_devtools/general/authorized_ranges';
 
