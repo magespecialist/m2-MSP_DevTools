@@ -70,13 +70,16 @@ class LayoutPlugin
      * @param  $blockId
      * @return string
      */
-    protected function injectHtmlAttribute($html, $blockId)
+    protected function injectHtmlAttribute($html, $blockId, $stack)
     {
         if (!$html || !$this->config->canInjectCode()) {
             return $html;
         }
 
-        $html = '<!-- MSPDEVTOOLS[' . $blockId . '] -->' . $html . '<!-- /MSPDEVTOOLS[' . $blockId . '] -->';
+
+        $html = '<!-- START[' . $blockId . '] - ' . end($stack) . ' -->' . $html . '<!-- /END[' . $blockId . '] - ' . end($stack) . ' -->';
+
+        $this->elementRegistry->setOpId();
 
         return $html;
     }
@@ -150,9 +153,10 @@ class LayoutPlugin
         }
 
         $blockId = $this->elementRegistry->getOpId();
+        $stack = $this->elementRegistry->getStack();
         $payload['id'] = $blockId;
         $this->elementRegistry->stop($name, $payload);
 
-        return $this->injectHtmlAttribute($html, $blockId);
+        return $this->injectHtmlAttribute($html, $blockId, $stack);
     }
 }
