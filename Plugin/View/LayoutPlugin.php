@@ -77,7 +77,7 @@ class LayoutPlugin
         }
 
 
-        $html = '<!-- START[' . $blockId . '] - ' . end($stack) . ' -->' . $html . '<!-- /END[' . $blockId . '] - ' . end($stack) . ' -->';
+        $html = '<!-- START_MSPDEV[' . $blockId . '] - ' . end($stack) . ' -->' . $html . '<!-- /END_MSPDEV[' . $blockId . '] - ' . end($stack) . ' -->';
 
         $this->elementRegistry->setOpId();
 
