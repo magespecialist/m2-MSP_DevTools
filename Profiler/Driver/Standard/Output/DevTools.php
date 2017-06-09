@@ -31,7 +31,7 @@ class DevTools extends AbstractOutput
         // @codingStandardsIgnoreStart
         // We must use superglobals since profiler classes cannot access to object manager or DI system
         // I know this is terrible and I feed bad for this, I'm still crying... any better idea?
-        if ($GLOBALS['msp_devtools_profiler']) {
+        if (array_key_exists('msp_devtools_profiler', $GLOBALS)) {
             // @codingStandardsIgnoreEnd
 
             $profilerInfo = [];
