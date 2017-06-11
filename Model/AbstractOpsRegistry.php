@@ -25,6 +25,7 @@ abstract class AbstractOpsRegistry
     protected $stackOps;
     protected $registeredOps;
     protected $tsStart;
+    protected $id = 1;
 
     public function __construct()
     {
@@ -56,11 +57,15 @@ abstract class AbstractOpsRegistry
      */
     public function getOpId($stack = null)
     {
-        if (is_null($stack)) {
-            $stack = $this->getStack();
-        }
+        return $this->id;
+    }
 
-        return md5(implode('/', $stack));
+    /**
+     * Set operation id
+     */
+    public function setOpId()
+    {
+        $this->id++;
     }
 
     /**
@@ -79,7 +84,11 @@ abstract class AbstractOpsRegistry
         }
 
         $opId = $this->getOpId();
-        $workTime = microtime(true) - $this->tsStart[$opId];
+        if (key_exists($opId, $this->tsStart)) {
+            $workTime = microtime(true) - $this->tsStart[$opId];
+        } else {
+            $workTime = microtime(true);
+        }
 
         $payload['name'] = $opName;
         $payload['stack'] = $this->stackOps;
