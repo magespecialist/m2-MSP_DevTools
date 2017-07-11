@@ -55,8 +55,8 @@ class LayoutPlugin
         EncoderInterface $encoder,
         DirectoryList $directoryList,
         Config $config
-    ) {
-
+    )
+    {
         $this->elementRegistry = $elementRegistry;
         $this->encoder = $encoder;
         $this->directoryList = $directoryList;
@@ -68,15 +68,17 @@ class LayoutPlugin
      *
      * @param  $html
      * @param  $blockId
+     * @param  $name
      * @return string
      */
-    protected function injectHtmlAttribute($html, $blockId)
+    protected function injectHtmlAttribute($html, $blockId, $name)
     {
         if (!$html || !$this->config->canInjectCode()) {
             return $html;
         }
 
-        $html = '<!-- MSPDEVTOOLS[' . $blockId . '] -->' . $html . '<!-- /MSPDEVTOOLS[' . $blockId . '] -->';
+        $html = '<!-- START_MSPDEV[' . $blockId . ']: ' . $name . ' -->' . $html
+            . '<!-- /END_MSPDEV[' . $blockId . ']: ' . $name . ' -->';
 
         return $html;
     }
@@ -86,7 +88,7 @@ class LayoutPlugin
         if (!$this->config->isActive()) {
             return $proceed($name, $useCache);
         }
-        
+
         if ($subject->isUiComponent($name)) {
             return $proceed($name, $useCache);
         }
@@ -153,6 +155,6 @@ class LayoutPlugin
         $payload['id'] = $blockId;
         $this->elementRegistry->stop($name, $payload);
 
-        return $this->injectHtmlAttribute($html, $blockId);
+        return $this->injectHtmlAttribute($html, $blockId, $name);
     }
 }

@@ -83,8 +83,6 @@ class ResponsePlugin
         RequestInterface $request,
         Config $config
     ) {
-
-
         $this->encoder = $encoder;
         $this->elementRegistry = $elementRegistry;
         $this->eventRegistry = $eventRegistry;

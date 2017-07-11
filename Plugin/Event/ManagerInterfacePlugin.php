@@ -48,7 +48,6 @@ class ManagerInterfacePlugin
         ConfigInterface $eventConfig,
         Config $config
     ) {
-
         $this->eventRegistry = $eventRegistry;
         $this->eventConfig = $eventConfig;
         $this->config = $config;

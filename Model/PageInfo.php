@@ -100,7 +100,6 @@ class PageInfo
         ResourceConnection $resource,
         PluginList $pluginList
     ) {
-
         $this->productMetadata = $productMetadata;
         $this->layout = $layout;
         $this->request = $request;
