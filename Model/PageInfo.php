@@ -87,12 +87,24 @@ class PageInfo
      */
     private $pluginList;
 
+    /**
+     * @var DataModelRegistry
+     */
+    private $dataModelRegistry;
+
+    /**
+     * @var CollectionRegistry
+     */
+    private $collectionRegistry;
+
     public function __construct(
         ProductMetadataInterface $productMetadata,
         LayoutInterface $layout,
         RequestInterface $request,
         EventRegistry $eventRegistry,
         ElementRegistry $elementRegistry,
+        DataModelRegistry $dataModelRegistry,
+        CollectionRegistry $collectionRegistry,
         DesignInterface $designInterface,
         Http $httpRequest,
         Config $config,
@@ -111,6 +123,8 @@ class PageInfo
         $this->stat = $stat;
         $this->resource = $resource;
         $this->pluginList = $pluginList;
+        $this->dataModelRegistry = $dataModelRegistry;
+        $this->collectionRegistry = $collectionRegistry;
     }
 
     /**
@@ -188,6 +202,8 @@ class PageInfo
             ],
             'events' => $this->eventRegistry->getRegisteredOps(),
             'blocks' => $this->elementRegistry->getRegisteredOps(),
+            'data-models' => $this->dataModelRegistry->getRegisteredOps(),
+            'collections' => $this->collectionRegistry->getRegisteredOps(),
             'plugins' => $this->getPluginsList(),
             'queries' => $this->getSqlProfilerData(),
             'version' => 2,
