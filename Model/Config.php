@@ -201,7 +201,7 @@ class Config
      */
     public function isActive()
     {
-        if ($this->getEnabled()) {
+        if ($this->getEnabled() && (php_sapi_name() !== 'cli')) {
             $ip = $this->remoteAddress->getRemoteAddress();
 
             $allowedRanges = $this->getAllowedRanges();
