@@ -26,6 +26,8 @@ abstract class AbstractOpsRegistry
     protected $registeredOps;
     protected $tsStart;
 
+    protected $stackable = true;
+
     public function __construct()
     {
         $this->stackOps = [];
@@ -41,9 +43,11 @@ abstract class AbstractOpsRegistry
      */
     public function start($opName)
     {
-        $this->stackOps[] = $opName;
-        $opId = $this->getOpId();
-        $this->tsStart[$opId] = microtime(true);
+        if ($this->stackable) {
+            $this->stackOps[] = $opName;
+            $opId = $this->getOpId();
+            $this->tsStart[$opId] = microtime(true);
+        }
 
         return $this;
     }
@@ -73,30 +77,43 @@ abstract class AbstractOpsRegistry
      */
     public function stop($opName, $payload = [])
     {
-        $lastOp = $this->stackOps[count($this->stackOps) - 1];
-        if ($opName != $lastOp) {
-            throw new \Exception('Invalido operation nesting');
-        }
+        if ($this->stackable) {
+            $lastOp = $this->stackOps[count($this->stackOps) - 1];
+            if ($opName != $lastOp) {
+                throw new \Exception('Invalid operation nesting');
+            }
 
-        $opId = $this->getOpId();
-        $workTime = microtime(true) - $this->tsStart[$opId];
+            $opId = $this->getOpId();
+            $workTime = microtime(true) - $this->tsStart[$opId];
 
-        $payload['name'] = $opName;
-        $payload['stack'] = $this->stackOps;
+            $payload['name'] = $opName;
+            $payload['stack'] = $this->stackOps;
 
-        if (!isset($this->registeredOps[$opId])) {
-            $payload['count'] = 1;
-            $payload['time'] = $workTime;
+            if (!isset($this->registeredOps[$opId])) {
+                $payload['count'] = 1;
+                $payload['time'] = $workTime;
+            } else {
+                $payload['count'] = $this->registeredOps[$opId]['count'] + 1;
+                $payload['time'] = $this->registeredOps[$opId]['time'] + $workTime;
+            }
+
+            $payload['proper_time'] = $payload['time'];
+
+            $this->registeredOps[$opId] = $payload;
+
+            array_pop($this->stackOps);
         } else {
-            $payload['count'] = $this->registeredOps[$opId]['count'] + 1;
-            $payload['time'] = $this->registeredOps[$opId]['time'] + $workTime;
+            $payload['name'] = $opName;
+
+            if (!isset($this->registeredOps[$opName])) {
+                $payload['count'] = 1;
+            } else {
+                $payload['count'] = $this->registeredOps[$opName]['count'] + 1;
+            }
+
+            $this->registeredOps[$opName] = $payload;
         }
 
-        $payload['proper_time'] = $payload['time'];
-
-        $this->registeredOps[$opId] = $payload;
-
-        array_pop($this->stackOps);
         return $this;
     }
 
