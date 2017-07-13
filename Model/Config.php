@@ -58,11 +58,14 @@ class Config
      * @var Http
      */
     private $http;
+
     /**
      * @var RequestInterface
      */
     private $request;
 
+    protected $isActive = null;
+    protected $isEnabled = null;
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -140,7 +143,11 @@ class Config
      */
     public function getEnabled()
     {
-        return (bool) $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLED);
+        if (is_null($this->isEnabled)) {
+            $this->isEnabled = (bool)$this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLED);
+        }
+
+        return $this->isEnabled;
     }
 
     /**
@@ -201,17 +208,24 @@ class Config
      */
     public function isActive()
     {
-        if ($this->getEnabled() && (php_sapi_name() !== 'cli')) {
-            $ip = $this->remoteAddress->getRemoteAddress();
+        if (is_null($this->isActive)) {
+            $this->isActive = false; // Avoid recursion
 
-            $allowedRanges = $this->getAllowedRanges();
+            if ((php_sapi_name() !== 'cli') && $this->getEnabled()) {
+                $ip = $this->remoteAddress->getRemoteAddress();
 
-            if (count($allowedRanges)) {
-                return $this->getIpIsMatched($ip, $allowedRanges);
+                $allowedRanges = $this->getAllowedRanges();
+
+                if (count($allowedRanges)) {
+                    $this->isActive = $this->getIpIsMatched($ip, $allowedRanges);
+                    return $this->isActive;
+                }
             }
+
+            $this->isActive = false;
         }
 
-        return false;
+        return $this->isActive;
     }
 
     /**
