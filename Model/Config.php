@@ -221,8 +221,6 @@ class Config
                     return $this->isActive;
                 }
             }
-
-            $this->isActive = false;
         }
 
         return $this->isActive;
