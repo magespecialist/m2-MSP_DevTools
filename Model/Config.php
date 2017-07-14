@@ -213,12 +213,10 @@ class Config
 
             if ((php_sapi_name() !== 'cli') && $this->getEnabled()) {
                 $ip = $this->remoteAddress->getRemoteAddress();
-
                 $allowedRanges = $this->getAllowedRanges();
 
                 if (count($allowedRanges)) {
                     $this->isActive = $this->getIpIsMatched($ip, $allowedRanges);
-                    return $this->isActive;
                 }
             }
         }
