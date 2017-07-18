@@ -25,6 +25,7 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Interception\InterceptorInterface;
 use Magento\Framework\Json\EncoderInterface;
 use Magento\Framework\View\Layout;
+use MSP\DevTools\Model\BlockProcessor;
 use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\ElementRegistry;
 
@@ -50,10 +51,16 @@ class LayoutPlugin
      */
     private $config;
 
+    /**
+     * @var BlockProcessor
+     */
+    private $blockProcessor;
+
     public function __construct(
         ElementRegistry $elementRegistry,
         EncoderInterface $encoder,
         DirectoryList $directoryList,
+        BlockProcessor $blockProcessor,
         Config $config
     )
     {
@@ -61,6 +68,7 @@ class LayoutPlugin
         $this->encoder = $encoder;
         $this->directoryList = $directoryList;
         $this->config = $config;
+        $this->blockProcessor = $blockProcessor;
     }
 
     /**
@@ -85,11 +93,11 @@ class LayoutPlugin
 
     public function aroundRenderElement(Layout $subject, \Closure $proceed, $name, $useCache = true)
     {
-        if (!$this->config->isActive()) {
+        if (!$this->config->isActive() || !$this->config->canInjectCode()) {
             return $proceed($name, $useCache);
         }
 
-        if ($subject->isUiComponent($name)) {
+        if ($subject->isUiComponent($name) || $subject->isBlock($name)) {
             return $proceed($name, $useCache);
         }
 
@@ -98,63 +106,13 @@ class LayoutPlugin
         }
 
         $this->elementRegistry->start($name);
-        $html = $proceed($name, $useCache);
-
-        $payload = [
-            'phpstorm_url' => null,
-        ];
-
-        if ($subject->isBlock($name)) {
-            $phpStormLinks = [];
-
-            $block = $subject->getBlock($name);
-
-            $payload['type'] = 'block';
-            $payload['class'] = $block instanceof InterceptorInterface ? get_parent_class($block) : get_class($block);
-            $payload['file'] = $this->config->getPhpClassFile($payload['class']);
-
-            if ($this->config->getPhpStormEnabled()) {
-                $phpStormLinks[] = [
-                    'key' => 'Block Class',
-                    'file' => $payload['file'],
-                    'link' => $this->config->getPhpStormUrl($payload['file']),
-                ];
-            }
-
-            $payload['template'] = $block->getTemplate();
-            if ($payload['template']) {
-                $payload['template_file'] = substr($block->getTemplateFile(), strlen($this->directoryList->getRoot()));
-                $phpStormUrl = $this->config->getPhpStormUrl($payload['template_file']);
-                if ($phpStormUrl) {
-                    $payload['phpstorm_url'] = $phpStormUrl;
-
-                    if ($this->config->getPhpStormEnabled()) {
-                        $phpStormLinks[] = [
-                            'key' => 'Template File',
-                            'file' => $payload['template_file'],
-                            'link' => $this->config->getPhpStormUrl($payload['template_file']),
-                        ];
-                    }
-                }
-            }
-
-            $payload['cache_key'] = $block->getCacheKey();
-            $payload['cache_key_info'] = $block->getCacheKeyInfo();
-            $payload['module'] = $block->getModuleName();
-
-            if ($block instanceof Block) {
-                $payload['cms_block_id'] = $block->getData('block_id');
-            }
-
-            $payload['phpstorm_links'] = $phpStormLinks;
-        } else {
-            $payload['type'] = 'container';
-        }
-
         $blockId = $this->elementRegistry->getOpId();
-        $payload['id'] = $blockId;
+        $html = $proceed($name, $useCache);
+        $payload = [
+            'id' => $blockId,
+            'type' => 'container',
+        ];
         $this->elementRegistry->stop($name, $payload);
-
-        return $this->injectHtmlAttribute($html, $blockId, $name);
+        return $this->blockProcessor->wrapBlock($html, $blockId, $name);
     }
 }

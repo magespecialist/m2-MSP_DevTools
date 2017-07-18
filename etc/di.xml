@@ -32,4 +32,8 @@
     <type name="Zend\Http\PhpEnvironment\Response">
         <plugin sortOrder="1" name="mSPDevToolsResponse" type="MSP\DevTools\Plugin\PhpEnvironment\ResponsePlugin"/>
     </type>
+    <type name="Magento\Framework\View\Element\AbstractBlock">
+        <plugin sortOrder="1" name="mSPDevToolsAbstractBlock"
+                type="MSP\DevTools\Plugin\View\Element\AbstractBlockPlugin"/>
+    </type>
 </config>
