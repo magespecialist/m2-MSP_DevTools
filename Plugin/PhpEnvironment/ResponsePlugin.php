@@ -120,8 +120,6 @@ class ResponsePlugin
                 // See \MSP\DevTools\Profiler\Driver\Standard\Output\DevTools
                 $GLOBALS['msp_devtools_profiler'] = true;
                 // @codingStandardsIgnoreEnd
-
-
             }
         }
 

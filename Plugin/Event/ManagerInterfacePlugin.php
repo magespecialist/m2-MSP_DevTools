@@ -28,6 +28,8 @@ use MSP\DevTools\Model\EventRegistry;
 class ManagerInterfacePlugin
 {
     protected $isActive = null;
+    protected $lock = false;
+
     /**
      * @var EventRegistry
      */
@@ -63,6 +65,8 @@ class ManagerInterfacePlugin
         return $this->isActive;
     }
 
+
+
     public function aroundDispatch(
         ManagerInterface $subject,
         \Closure $proceed,
@@ -79,21 +83,27 @@ class ManagerInterfacePlugin
 
         $phpStormLinks = [];
 
-        foreach ($observersConfig as $observerConfig) {
-            $fileName = $this->config->getPhpClassFile($observerConfig['instance']);
+        if (!$this->lock) {
+            $this->lock = true;
 
-            $observers[$observerConfig['name']] = [
-                'class' => $observerConfig['instance'],
-                'file' => $fileName,
-            ];
+            foreach ($observersConfig as $observerConfig) {
+                $fileName = $this->config->getPhpClassFile($observerConfig['instance']);
 
-            if ($this->config->getPhpStormEnabled()) {
-                $phpStormLinks[] = [
-                    'key' => 'Observer "'.$observerConfig['name'].'"',
+                $observers[$observerConfig['name']] = [
+                    'class' => $observerConfig['instance'],
                     'file' => $fileName,
-                    'link' => $this->config->getPhpStormUrl($fileName),
                 ];
+
+                if ($this->config->getPhpStormEnabled()) {
+                    $phpStormLinks[] = [
+                        'key' => 'Observer "' . $observerConfig['name'] . '"',
+                        'file' => $fileName,
+                        'link' => $this->config->getPhpStormUrl($fileName),
+                    ];
+                }
             }
+
+            $this->lock = false;
         }
 
         $this->eventRegistry->start($eventName);
