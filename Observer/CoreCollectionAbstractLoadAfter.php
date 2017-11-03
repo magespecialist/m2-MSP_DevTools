@@ -52,19 +52,23 @@ class CoreCollectionAbstractLoadAfter implements ObserverInterface
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         if ($this->config->isActive()) {
-            $obj = $observer->getEvent()->getCollection();
+            try {
+                $obj = $observer->getEvent()->getCollection();
+                $objName = preg_replace("/\\\\Interceptor$/", "", get_class($obj));
 
-            $objName = preg_replace("/\\\\Interceptor$/", "",
-                get_class($obj));
+                // @codingStandardsIgnoreStart
+                $objId = md5($objName . '::' . $obj->getSelect());
+                // @codingStandardsIgnoreEnd
 
-            $objId = md5($objName . '::' . $obj->getSelect());
-
-            $this->collectionRegistry->stop($objId, [
-                'collection' => $objName,
-                'items' => $obj->getSize(),
-                'page_num' => $obj->getCurPage(),
-                'sql' => '' . $obj->getSelect()
-            ]);
+                $this->collectionRegistry->stop($objId, [
+                    'collection' => $objName,
+                    'items' => $obj->getSize(),
+                    'page_num' => $obj->getCurPage(),
+                    'sql' => '' . $obj->getSelect()
+                ]);
+            } catch (\Exception $e) {
+                return;
+            }
         }
     }
 }
