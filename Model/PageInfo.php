@@ -30,6 +30,10 @@ use Magento\Framework\View\LayoutInterface;
 use Magento\Framework\Interception\DefinitionInterface;
 use Magento\Framework\App\ResourceConnection;
 
+/**
+ * Class PageInfo
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class PageInfo
 {
     /**
@@ -97,6 +101,23 @@ class PageInfo
      */
     private $collectionRegistry;
 
+    /**
+     * PageInfo constructor.
+     * @param ProductMetadataInterface $productMetadata
+     * @param LayoutInterface $layout
+     * @param RequestInterface $request
+     * @param EventRegistry $eventRegistry
+     * @param ElementRegistry $elementRegistry
+     * @param DataModelRegistry $dataModelRegistry
+     * @param CollectionRegistry $collectionRegistry
+     * @param DesignInterface $designInterface
+     * @param Http $httpRequest
+     * @param Config $config
+     * @param Stat $stat
+     * @param ResourceConnection $resource
+     * @param PluginList $pluginList
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     */
     public function __construct(
         ProductMetadataInterface $productMetadata,
         LayoutInterface $layout,
@@ -129,15 +150,31 @@ class PageInfo
 
     /**
      * Get page information
-     *
      * @return array
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function getPageInfo()
     {
-        $layoutUpdates = $this->layout->getUpdate();
         $request = $this->request;
         $httpRequest = $this->httpRequest;
         $design = $this->design;
+
+        try {
+            $layoutUpdates = $this->layout->getUpdate();
+            $allLayoutHandles = $layoutUpdates->getHandles();
+        } catch (\Exception $e) {
+            $allLayoutHandles = [];
+        }
+
+        $addedLayoutHandles = [];
+        $layoutHandles = [];
+        foreach ($allLayoutHandles as $layoutHandle) {
+            if (in_array($layoutHandle, ['default', $httpRequest->getFullActionName()])) {
+                $layoutHandles[] = $layoutHandle;
+            } else {
+                $addedLayoutHandles[] = $layoutHandle;
+            }
+        }
 
         $themeInheritance = [];
 
@@ -184,7 +221,12 @@ class PageInfo
                 [
                     'id' => 'handles',
                     'label' => 'Layout Handles',
-                    'value' => $layoutUpdates->getHandles(),
+                    'value' => $layoutHandles,
+                    'type' => 'complex'
+                ], [
+                    'id' => 'additional_handles',
+                    'label' => 'Additional Handles',
+                    'value' => $addedLayoutHandles,
                     'type' => 'complex'
                 ], [
                     'id' => 'theme_code',
@@ -212,11 +254,17 @@ class PageInfo
         return $info;
     }
 
-
+    /**
+     * Get a list of plugins
+     * @return array
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
     public function getPluginsList()
     {
         $plugins = [];
+        // @codingStandardsIgnoreStart
         $reflection = new \ReflectionClass($this->pluginList);
+        // @codingStandardsIgnoreEnd
 
         $processed = $reflection->getProperty('_processed');
         $processed->setAccessible(true);
@@ -243,13 +291,15 @@ class PageInfo
                 $method = $matches[2];
 
                 if (!empty($inherited[$type])) {
-                    foreach($processDef as $keyType => $pluginsNames) {
+                    foreach ($processDef as $keyType => $pluginsNames) {
                         if (!is_array($pluginsNames)) {
                             $pluginsNames = [$pluginsNames];
                         }
 
                         $classMethod = $type . '::' . $method;
+                        // @codingStandardsIgnoreStart
                         $key = md5($classMethod);
+                        // @codingStandardsIgnoreEnd
 
                         if (!isset($plugins[$key])) {
                             $fileName = $this->config->getPhpClassFile($type);
@@ -275,7 +325,7 @@ class PageInfo
 
                         foreach ($pluginsNames as $pluginName) {
                             if (!empty($inherited[$type][$pluginName])) {
-                                $sortOrder = intval($inherited[$type][$pluginName]['sortOrder']);
+                                $sortOrder = (int) $inherited[$type][$pluginName]['sortOrder'];
 
                                 $fileName = $this->config->getPhpClassFile(
                                     $inherited[$type][$pluginName]['instance']
@@ -304,7 +354,12 @@ class PageInfo
         return $plugins;
     }
 
-    protected function getSqlProfilerData()
+    /**
+     * Get a list of plugins
+     * @return array
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    private function getSqlProfilerData()
     {
         $allQueries = [];
         $sqlProfiler = $this->resource->getConnection('read')->getProfiler();
@@ -342,7 +397,7 @@ class PageInfo
 
             $squareSum = 0;
 
-            foreach ($allQueries as $index=>$query) {
+            foreach ($allQueries as $index => $query) {
                 $squareSum = pow($query['time'] - $average, 2);
             }
 
@@ -353,7 +408,7 @@ class PageInfo
             foreach ($allQueries as $index => $query) {
                 if ($query['time'] < ($shortestQueryTime + 2*$standardDeviation)) {
                     $allQueries[$index]['grade'] = 'good';
-                } elseif($query['time'] > ($longestQueryTime - 2*$standardDeviation)) {
+                } elseif ($query['time'] > ($longestQueryTime - 2*$standardDeviation)) {
                     $allQueries[$index]['grade'] = 'bad';
                 }
 
