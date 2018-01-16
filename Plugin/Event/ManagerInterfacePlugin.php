@@ -87,10 +87,17 @@ class ManagerInterfacePlugin
             $this->lock = true;
 
             foreach ($observersConfig as $observerConfig) {
-                $fileName = $this->config->getPhpClassFile($observerConfig['instance']);
-
+                $fileName = 'undefined';
+                $instance = 'undefined';
+                if (key_exists('instance', $observerConfig)) {
+                    $fileName = $this->config->getPhpClassFile($observerConfig['instance']);
+                    $instance = $observerConfig['instance'];
+                }
+                if (key_exists('disabled', $observerConfig) && $observerConfig['disabled'] == true) {
+                    $observerConfig['name'] = 'DISABLED_' . $observerConfig['name'];
+                }
                 $observers[$observerConfig['name']] = [
-                    'class' => $observerConfig['instance'],
+                    'class' => $instance,
                     'file' => $fileName,
                 ];
 
