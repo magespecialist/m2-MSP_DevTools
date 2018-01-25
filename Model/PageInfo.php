@@ -229,7 +229,12 @@ class PageInfo
                     'value' => $addedLayoutHandles,
                     'type' => 'complex'
                 ], [
+                    'id' => 'theme_id',
+                    'label' => 'Theme ID',
+                    'value' => $design->getDesignTheme()->getId(),
+                ], [
                     'id' => 'theme_code',
+                    'label' => 'Theme Code',
                     'value' => $design->getDesignTheme()->getCode(),
                 ], [
                     'id' => 'theme_title',
