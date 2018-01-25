@@ -36,4 +36,15 @@
         <plugin sortOrder="1" name="mSPDevToolsAbstractBlock"
                 type="MSP\DevTools\Plugin\View\Element\AbstractBlockPlugin"/>
     </type>
+
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="environment" xsi:type="array">
+                <item name="msp_devtools/general/enabled" xsi:type="string">1</item>
+                <item name="msp_devtools/general/authorized_ranges" xsi:type="string">1</item>
+                <item name="msp_devtools/phpstorm/enabled" xsi:type="string">1</item>
+                <item name="msp_devtools/phpstorm/port" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
