@@ -29,7 +29,7 @@
         <plugin sortOrder="1" name="mSPDevToolsManagerInterface"
                 type="MSP\DevTools\Plugin\Event\ManagerInterfacePlugin"/>
     </type>
-    <type name="Magento\Framework\HTTP\PhpEnvironment">
+    <type name="Magento\Framework\HTTP\PhpEnvironment\Response">
         <plugin sortOrder="1" name="mSPDevToolsResponse" type="MSP\DevTools\Plugin\PhpEnvironment\ResponsePlugin"/>
     </type>
     <type name="Magento\Framework\View\Element\AbstractBlock">
