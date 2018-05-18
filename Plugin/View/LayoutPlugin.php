@@ -112,7 +112,11 @@ class LayoutPlugin
             'id' => $blockId,
             'type' => 'container',
         ];
-        $this->elementRegistry->stop($name, $payload);
+        try {
+            $this->elementRegistry->stop($name, $payload);
+        } catch (\Exception $e) {
+            
+        }
         return $this->blockProcessor->wrapBlock($html, $blockId, $name);
     }
 }
