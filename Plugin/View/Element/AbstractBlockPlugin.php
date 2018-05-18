@@ -64,7 +64,11 @@ class AbstractBlockPlugin
         $blockId = $this->elementRegistry->getOpId();
         $html = $proceed();
         $payload = $this->blockProcessor->processBlock($subject, $blockId);
-        $this->elementRegistry->stop($name, $payload);
+        try {
+            $this->elementRegistry->stop($name, $payload);
+        } catch (\Exception $e) {
+            
+        }
 
         return $this->blockProcessor->wrapBlock($html, $blockId, $name);
     }
