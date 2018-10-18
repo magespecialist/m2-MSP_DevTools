@@ -22,6 +22,9 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
+        <tab id="msp_common" translate="label" sortOrder="999">
+            <label>MSP DevTools</label>
+        </tab>
         <section id="msp_devtools" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>DevTools</label>
