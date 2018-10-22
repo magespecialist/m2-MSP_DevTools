@@ -25,3 +25,11 @@ Please refer to this page: https://github.com/magespecialist/mage-chrome-toolbar
 
 #### Inspector integration
 <img src="https://raw.githubusercontent.com/magespecialist/mage-chrome-toolbar/master/screenshots/main2.png" width="480" />
+
+# Known Issue
+
+When using [axios](https://github.com/axios/axios]) always set 
+
+`headers: {'X-Requested-With': 'XMLHttpRequest'}` 
+
+in your request config to avoid to avoid to obtain json with appended `<script>` tag as described in [Issue #33](https://github.com/magespecialist/m2-MSP_DevTools/issues/33)
