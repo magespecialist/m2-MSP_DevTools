@@ -20,9 +20,11 @@
 
 namespace MSP\DevTools\Model;
 
+use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\State;
 use Magento\Framework\Autoload\AutoloaderRegistry;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
@@ -64,6 +66,11 @@ class Config
      */
     private $request;
 
+    /**
+     * @var State
+     */
+    private $state;
+
     protected $isActive = null;
     protected $isEnabled = null;
 
@@ -72,7 +79,8 @@ class Config
         RequestInterface $request,
         RemoteAddress $remoteAddress,
         DirectoryList $directoryList,
-        Http $http
+        Http $http,
+        State $state
     ) {
 
         $this->scopeConfig = $scopeConfig;
@@ -80,6 +88,7 @@ class Config
         $this->directoryList = $directoryList;
         $this->http = $http;
         $this->request = $request;
+        $this->state = $state;
     }
 
     /**
@@ -240,7 +249,8 @@ class Config
                 if (
                     (!$this->request->getParam('isAjax') || ($this->request->getParam('isAjax') == 'false')) &&
                     ($requestedWith != 'xmlhttprequest') &&
-                    (strpos($requestedWith, 'shockwaveflash') === false)
+                    (strpos($requestedWith, 'shockwaveflash') === false &&
+                    $this->state->getAreaCode() !== Area::AREA_GRAPHQL)
                 ) {
                     $this->canInjectCode = true;
                 }
