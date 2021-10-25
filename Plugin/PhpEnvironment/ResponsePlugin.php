@@ -98,8 +98,11 @@ class ResponsePlugin
         \Closure $proceed
     ) {
         $res = $proceed();
-
         if ($this->config->canInjectCode()) {
+            $contentType = $subject->getHeader('content-type');
+            if ($contentType && $contentType->match('application/json')) {
+                return $res;
+            }
             if ($subject instanceof HttpResponse) {
                 $this->elementRegistry->calcTimers();
                 $this->eventRegistry->calcTimers();
