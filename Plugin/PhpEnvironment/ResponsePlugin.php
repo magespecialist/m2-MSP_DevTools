@@ -25,6 +25,7 @@ use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Profiler\Driver\Standard as StandardProfiler;
 use MSP\DevTools\Model\Config;
+use MSP\DevTools\Model\IsInjectableContentType;
 use MSP\DevTools\Model\PageInfo;
 use Zend\Http\PhpEnvironment\Response;
 use Magento\Framework\Json\EncoderInterface;
@@ -73,6 +74,11 @@ class ResponsePlugin
      */
     private $config;
 
+    /**
+     * @var IsInjectableContentType
+     */
+    private $isInjectableContentType;
+
     public function __construct(
         EncoderInterface $encoder,
         ElementRegistry $elementRegistry,
@@ -81,7 +87,8 @@ class ResponsePlugin
         Http $http,
         StandardProfiler $standardProfiler,
         RequestInterface $request,
-        Config $config
+        Config $config,
+        IsInjectableContentType $isInjectableContentType
     ) {
         $this->encoder = $encoder;
         $this->elementRegistry = $elementRegistry;
@@ -91,6 +98,7 @@ class ResponsePlugin
         $this->standardProfiler = $standardProfiler;
         $this->request = $request;
         $this->config = $config;
+        $this->isInjectableContentType = $isInjectableContentType;
     }
 
     public function aroundSendContent(
@@ -98,11 +106,7 @@ class ResponsePlugin
         \Closure $proceed
     ) {
         $res = $proceed();
-        if ($this->config->canInjectCode()) {
-            $contentType = $subject->getHeader('content-type');
-            if ($contentType && $contentType->match('application/json')) {
-                return $res;
-            }
+        if ($this->config->canInjectCode() && $this->isInjectableContentType->execute($subject)) {
             if ($subject instanceof HttpResponse) {
                 $this->elementRegistry->calcTimers();
                 $this->eventRegistry->calcTimers();

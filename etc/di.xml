@@ -47,4 +47,13 @@
             </argument>
         </arguments>
     </type>
+    
+    <type name="MSP\DevTools\Model\IsInjectableContentType">
+        <arguments>
+            <argument name="contentTypesToSkip" xsi:type="array">
+                <item name="json" xsi:type="string">application/json</item>
+                <item name="javascript" xsi:type="string">application/javascript</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
