@@ -20,26 +20,18 @@
 
 namespace MSP\DevTools\Model;
 
-use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Request\Http;
-use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\State;
-use Magento\Framework\Autoload\AutoloaderRegistry;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Autoload\AutoloaderRegistry;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 
 class Config
 {
-    const PROTOCOL_VERSION = 3;
-
-    const XML_PATH_GENERAL_ENABLED = 'msp_devtools/general/enabled';
-    const XML_PATH_GENERAL_AUTHORIZED_IPS = 'msp_devtools/general/authorized_ranges';
-
-    const XML_PATH_PHPSTORM_ENABLED = 'msp_devtools/phpstorm/enabled';
-    const XML_PATH_PHPSTORM_PORT = 'msp_devtools/phpstorm/port';
-
-    protected $canInjectCode;
+    public const PROTOCOL_VERSION = 3;
+    public const XML_PATH_GENERAL_ENABLED = 'msp_devtools/general/enabled';
+    public const XML_PATH_GENERAL_AUTHORIZED_IPS = 'msp_devtools/general/authorized_ranges';
+    public const XML_PATH_PHPSTORM_ENABLED = 'msp_devtools/phpstorm/enabled';
+    public const XML_PATH_PHPSTORM_PORT = 'msp_devtools/phpstorm/port';
 
     /**
      * @var ScopeConfigInterface
@@ -56,39 +48,18 @@ class Config
      */
     private $directoryList;
 
-    /**
-     * @var Http
-     */
-    private $http;
-
-    /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * @var State
-     */
-    private $state;
-
     protected $isActive = null;
     protected $isEnabled = null;
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        RequestInterface $request,
         RemoteAddress $remoteAddress,
-        DirectoryList $directoryList,
-        Http $http,
-        State $state
+        DirectoryList $directoryList
     ) {
 
         $this->scopeConfig = $scopeConfig;
         $this->remoteAddress = $remoteAddress;
         $this->directoryList = $directoryList;
-        $this->http = $http;
-        $this->request = $request;
-        $this->state = $state;
     }
 
     /**
@@ -123,7 +94,7 @@ class Config
      */
     public function getPhpStormPort()
     {
-        $port = intval($this->scopeConfig->getValue(self::XML_PATH_PHPSTORM_PORT));
+        $port = (int) $this->scopeConfig->getValue(self::XML_PATH_PHPSTORM_PORT);
         if (!$port) {
             $port = 8091;
         }
@@ -152,8 +123,8 @@ class Config
      */
     public function getEnabled()
     {
-        if (is_null($this->isEnabled)) {
-            $this->isEnabled = (bool)$this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLED);
+        if (null === $this->isEnabled) {
+            $this->isEnabled = (bool) $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLED);
         }
 
         return $this->isEnabled;
@@ -217,7 +188,7 @@ class Config
      */
     public function isActive()
     {
-        if (is_null($this->isActive)) {
+        if (null === $this->isActive) {
             $this->isActive = false; // Avoid recursion
 
             if ((php_sapi_name() !== 'cli') && $this->getEnabled()) {
@@ -231,32 +202,5 @@ class Config
         }
 
         return $this->isActive;
-    }
-
-    /**
-     * Return true if can inject code
-     * @return bool
-     */
-    public function canInjectCode()
-    {
-        if (is_null($this->canInjectCode)) {
-
-            $this->canInjectCode = false;
-
-            if ($this->isActive()) {
-                $requestedWith = strtolower($this->http->getHeader('X-Requested-With'));
-
-                if (
-                    (!$this->request->getParam('isAjax') || ($this->request->getParam('isAjax') == 'false')) &&
-                    ($requestedWith != 'xmlhttprequest') &&
-                    (strpos($requestedWith, 'shockwaveflash') === false &&
-                    $this->state->getAreaCode() !== Area::AREA_GRAPHQL)
-                ) {
-                    $this->canInjectCode = true;
-                }
-            }
-        }
-
-        return $this->canInjectCode;
     }
 }

@@ -24,6 +24,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Profiler\Driver\Standard as StandardProfiler;
+use MSP\DevTools\Model\CanInjectCode;
 use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\IsInjectableContentType;
 use MSP\DevTools\Model\PageInfo;
@@ -88,7 +89,8 @@ class ResponsePlugin
         StandardProfiler $standardProfiler,
         RequestInterface $request,
         Config $config,
-        IsInjectableContentType $isInjectableContentType
+        IsInjectableContentType $isInjectableContentType,
+        CanInjectCode $canInjectCode
     ) {
         $this->encoder = $encoder;
         $this->elementRegistry = $elementRegistry;
@@ -99,6 +101,7 @@ class ResponsePlugin
         $this->request = $request;
         $this->config = $config;
         $this->isInjectableContentType = $isInjectableContentType;
+        $this->canInjectCode = $canInjectCode;
     }
 
     public function aroundSendContent(
@@ -106,7 +109,7 @@ class ResponsePlugin
         \Closure $proceed
     ) {
         $res = $proceed();
-        if ($this->config->canInjectCode() && $this->isInjectableContentType->execute($subject)) {
+        if ($this->canInjectCode->execute() && $this->isInjectableContentType->execute($subject)) {
             if ($subject instanceof HttpResponse) {
                 $this->elementRegistry->calcTimers();
                 $this->eventRegistry->calcTimers();

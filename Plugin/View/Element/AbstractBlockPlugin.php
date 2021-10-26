@@ -22,6 +22,7 @@ namespace MSP\DevTools\Plugin\View\Element;
 
 use Magento\Framework\View\Element\AbstractBlock;
 use MSP\DevTools\Model\BlockProcessor;
+use MSP\DevTools\Model\CanInjectCode;
 use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\ElementRegistry;
 
@@ -42,19 +43,23 @@ class AbstractBlockPlugin
      */
     private $elementRegistry;
 
+    private CanInjectCode $canInjectCode;
+
     public function __construct(
         ElementRegistry $elementRegistry,
         BlockProcessor $blockProcessor,
-        Config $config
+        Config $config,
+        CanInjectCode $canInjectCode
     ) {
         $this->blockProcessor = $blockProcessor;
         $this->config = $config;
         $this->elementRegistry = $elementRegistry;
+        $this->canInjectCode = $canInjectCode;
     }
 
     public function aroundToHtml(AbstractBlock $subject, \Closure $proceed)
     {
-        if (!$this->config->isActive() || !$this->config->canInjectCode()) {
+        if (!$this->canInjectCode->execute()) {
             return $proceed();
         }
 
@@ -67,7 +72,7 @@ class AbstractBlockPlugin
         try {
             $this->elementRegistry->stop($name, $payload);
         } catch (\Exception $e) {
-            
+
         }
 
         return $this->blockProcessor->wrapBlock($html, $blockId, $name);

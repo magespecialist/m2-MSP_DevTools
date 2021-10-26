@@ -26,6 +26,7 @@ use Magento\Framework\Interception\InterceptorInterface;
 use Magento\Framework\Json\EncoderInterface;
 use Magento\Framework\View\Layout;
 use MSP\DevTools\Model\BlockProcessor;
+use MSP\DevTools\Model\CanInjectCode;
 use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\ElementRegistry;
 
@@ -56,12 +57,15 @@ class LayoutPlugin
      */
     private $blockProcessor;
 
+    private CanInjectCode $canInjectCode;
+
     public function __construct(
         ElementRegistry $elementRegistry,
         EncoderInterface $encoder,
         DirectoryList $directoryList,
         BlockProcessor $blockProcessor,
-        Config $config
+        Config $config,
+        CanInjectCode $canInjectCode
     )
     {
         $this->elementRegistry = $elementRegistry;
@@ -69,6 +73,7 @@ class LayoutPlugin
         $this->directoryList = $directoryList;
         $this->config = $config;
         $this->blockProcessor = $blockProcessor;
+        $this->canInjectCode = $canInjectCode;
     }
 
     /**
@@ -81,7 +86,7 @@ class LayoutPlugin
      */
     protected function injectHtmlAttribute($html, $blockId, $name)
     {
-        if (!$html || !$this->config->canInjectCode()) {
+        if (!$html || !$this->canInjectCode->execute()) {
             return $html;
         }
 
@@ -93,7 +98,7 @@ class LayoutPlugin
 
     public function aroundRenderElement(Layout $subject, \Closure $proceed, $name, $useCache = true)
     {
-        if (!$this->config->isActive() || !$this->config->canInjectCode()) {
+        if (!$this->canInjectCode->execute()) {
             return $proceed($name, $useCache);
         }
 
@@ -115,7 +120,7 @@ class LayoutPlugin
         try {
             $this->elementRegistry->stop($name, $payload);
         } catch (\Exception $e) {
-            
+
         }
         return $this->blockProcessor->wrapBlock($html, $blockId, $name);
     }
