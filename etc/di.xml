@@ -47,12 +47,23 @@
             </argument>
         </arguments>
     </type>
-    
+
     <type name="MSP\DevTools\Model\IsInjectableContentType">
         <arguments>
             <argument name="contentTypesToSkip" xsi:type="array">
                 <item name="json" xsi:type="string">application/json</item>
                 <item name="javascript" xsi:type="string">application/javascript</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="MSP\DevTools\Model\CanInjectCode">
+        <arguments>
+            <argument name="rules" xsi:type="array">
+                <item name="requestWith" xsi:type="object">\MSP\DevTools\Model\InjectionRules\RequestWith</item>
+                <item name="ajax" xsi:type="object">\MSP\DevTools\Model\InjectionRules\Ajax</item>
+                <item name="areaCode" xsi:type="object">\MSP\DevTools\Model\InjectionRules\AreaCode</item>
+                <item name="livewire" xsi:type="object">\MSP\DevTools\Model\InjectionRules\Livewire</item>
             </argument>
         </arguments>
     </type>

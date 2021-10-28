@@ -6,10 +6,9 @@
 
 declare(strict_types=1);
 
-
 namespace MSP\DevTools\Model;
 
-use Zend\Http\PhpEnvironment\Response;
+use Laminas\Http\PhpEnvironment\Response;
 
 class IsInjectableContentType
 {
