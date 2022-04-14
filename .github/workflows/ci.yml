@@ -1,0 +1,18 @@
+name: ExtDN M2 Coding Standard
+on: [push, pull_request]
+
+jobs:
+  static:
+    name: M2 Coding Standard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: extdn/github-actions-m2/magento-coding-standard/7.4@master
+
+  phpmd:
+    name: M2 Mess Detector
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: extdn/github-actions-m2/magento-mess-detector@master
+
