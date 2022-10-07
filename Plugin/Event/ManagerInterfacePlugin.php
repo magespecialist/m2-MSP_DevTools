@@ -67,8 +67,9 @@ class ManagerInterfacePlugin
         return $this->isActive;
     }
 
-
-
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function aroundDispatch(
         ManagerInterface $subject,
         \Closure $proceed,
@@ -103,7 +104,7 @@ class ManagerInterfacePlugin
                     'file' => $fileName,
                 ];
 
-                if ($this->config->getPhpStormEnabled()) {
+                if ($this->config->isPhpStormEnabled()) {
                     $phpStormLinks[] = [
                         'key' => 'Observer "' . $observerConfig['name'] . '"',
                         'file' => $fileName,
