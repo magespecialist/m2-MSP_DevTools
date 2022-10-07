@@ -58,8 +58,9 @@ class ModelLoadAfter implements ObserverInterface
                 $objName = preg_replace("/\\\\Interceptor$/", "",
                     get_class($obj));
 
+                // phpcs:disable
                 $objId = md5($objName . '::' . $obj->getId());
-
+                // phpcs:enable
                 $this->dataModelRegistry->stop($objId, [
                     'model' => $objName . ' (id: ' . $obj->getId() . ')',
                     'data' => $obj->getData()

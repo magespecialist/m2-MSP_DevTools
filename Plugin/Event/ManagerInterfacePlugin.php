@@ -18,6 +18,8 @@
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+declare(strict_types=1);
+
 namespace MSP\DevTools\Plugin\Event;
 
 use Magento\Framework\Event\ManagerInterface;
@@ -57,7 +59,7 @@ class ManagerInterfacePlugin
 
     protected function isThisActive()
     {
-        if (is_null($this->isActive)) {
+        if (null === $this->isActive) {
             $this->isActive = false; // This avoids recursion
             $this->isActive = $this->config->isActive();
         }
@@ -89,11 +91,11 @@ class ManagerInterfacePlugin
             foreach ($observersConfig as $observerConfig) {
                 $fileName = 'undefined';
                 $instance = 'undefined';
-                if (key_exists('instance', $observerConfig)) {
+                if (array_key_exists('instance', $observerConfig)) {
                     $fileName = $this->config->getPhpClassFile($observerConfig['instance']);
                     $instance = $observerConfig['instance'];
                 }
-                if (key_exists('disabled', $observerConfig) && $observerConfig['disabled'] == true) {
+                if (array_key_exists('disabled', $observerConfig) && $observerConfig['disabled']) {
                     $observerConfig['name'] = 'DISABLED_' . $observerConfig['name'];
                 }
                 $observers[$observerConfig['name']] = [
