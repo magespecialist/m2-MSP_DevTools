@@ -60,11 +60,13 @@ abstract class AbstractOpsRegistry
      */
     public function getOpId($stack = null)
     {
-        if (is_null($stack)) {
+        if (null === $stack) {
             $stack = $this->getStack();
         }
 
+        // phpcs:disable
         return md5(implode('/', $stack));
+        // phpcs:enable
     }
 
     /**
@@ -80,7 +82,7 @@ abstract class AbstractOpsRegistry
         if ($this->stackable) {
             $lastOp = $this->stackOps[count($this->stackOps) - 1];
             if ($opName != $lastOp) {
-                throw new \Exception('Invalid operation nesting');
+                throw new \RuntimeException('Invalid operation nesting');
             }
 
             $opId = $this->getOpId();
@@ -161,8 +163,8 @@ abstract class AbstractOpsRegistry
         }
 
         foreach ($this->registeredOps as $opId => &$registeredOp) {
-            $registeredOp['proper_time'] = intval(1000 * $registeredOp['proper_time']);
-            $registeredOp['time'] = intval(1000 * $registeredOp['time']);
+            $registeredOp['proper_time'] = (int) (1000 * $registeredOp['proper_time']);
+            $registeredOp['time'] = (int) (1000 * $registeredOp['time']);
         }
 
         return $this;
