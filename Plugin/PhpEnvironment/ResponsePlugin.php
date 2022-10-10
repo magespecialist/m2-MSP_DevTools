@@ -20,18 +20,15 @@
 
 namespace MSP\DevTools\Plugin\PhpEnvironment;
 
-use Magento\Framework\App\RequestInterface;
+use Laminas\Http\PhpEnvironment\Response;
 use Magento\Framework\App\Response\Http as HttpResponse;
-use Magento\Framework\App\Request\Http;
-use Magento\Framework\Profiler\Driver\Standard as StandardProfiler;
+use Magento\Framework\Json\EncoderInterface;
 use MSP\DevTools\Model\CanInjectCode;
 use MSP\DevTools\Model\Config;
-use MSP\DevTools\Model\IsInjectableContentType;
-use MSP\DevTools\Model\PageInfo;
-use Zend\Http\PhpEnvironment\Response;
-use Magento\Framework\Json\EncoderInterface;
 use MSP\DevTools\Model\ElementRegistry;
 use MSP\DevTools\Model\EventRegistry;
+use MSP\DevTools\Model\IsInjectableContentType;
+use MSP\DevTools\Model\PageInfo;
 
 class ResponsePlugin
 {
@@ -56,39 +53,20 @@ class ResponsePlugin
     private $pageInfo;
 
     /**
-     * @var Http
-     */
-    private $http;
-
-    /**
-     * @var StandardProfiler
-     */
-    private $standardProfiler;
-
-    /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @var IsInjectableContentType
      */
     private $isInjectableContentType;
+
+    /**
+     * @var CanInjectCode
+     */
+    private $canInjectCode;
 
     public function __construct(
         EncoderInterface $encoder,
         ElementRegistry $elementRegistry,
         EventRegistry $eventRegistry,
         PageInfo $pageInfo,
-        Http $http,
-        StandardProfiler $standardProfiler,
-        RequestInterface $request,
-        Config $config,
         IsInjectableContentType $isInjectableContentType,
         CanInjectCode $canInjectCode
     ) {
@@ -96,10 +74,6 @@ class ResponsePlugin
         $this->elementRegistry = $elementRegistry;
         $this->eventRegistry = $eventRegistry;
         $this->pageInfo = $pageInfo;
-        $this->http = $http;
-        $this->standardProfiler = $standardProfiler;
-        $this->request = $request;
-        $this->config = $config;
         $this->isInjectableContentType = $isInjectableContentType;
         $this->canInjectCode = $canInjectCode;
     }

@@ -59,7 +59,7 @@ class BlockProcessor
         if (trim($html)) {
             $html = '<!-- START_MSPDEV[' . $blockId . ']: ' . $name . ' -->' . $html
             . '<!-- END_MSPDEV[' . $blockId . ']: ' . $name . ' -->';
- 
+
         }
         return $html;
     }
@@ -82,7 +82,7 @@ class BlockProcessor
         $payload['class'] = $block instanceof InterceptorInterface ? get_parent_class($block) : get_class($block);
         $payload['file'] = $this->config->getPhpClassFile($payload['class']);
 
-        if ($this->config->getPhpStormEnabled()) {
+        if ($this->config->isPhpStormEnabled()) {
             $phpStormLinks[] = [
                 'key' => 'Block Class',
                 'file' => $payload['file'],
@@ -97,7 +97,7 @@ class BlockProcessor
             if ($phpStormUrl) {
                 $payload['phpstorm_url'] = $phpStormUrl;
 
-                if ($this->config->getPhpStormEnabled()) {
+                if ($this->config->isPhpStormEnabled()) {
                     $phpStormLinks[] = [
                         'key' => 'Template File',
                         'file' => $payload['template_file'],
