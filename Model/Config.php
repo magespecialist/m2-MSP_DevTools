@@ -158,7 +158,7 @@ class Config
      * @param  array $ranges
      * @return bool
      */
-    public function IsIpMatched($ip, array $ranges)
+    public function isIpMatched($ip, array $ranges)
     {
         foreach ($ranges as $range) {
             if ($this->isIpInRange($ip, $range)) {
@@ -195,7 +195,7 @@ class Config
                 $allowedRanges = $this->getAllowedRanges();
 
                 if (count($allowedRanges)) {
-                    $this->isActive = $this->IsIpMatched($ip, $allowedRanges);
+                    $this->isActive = $this->isIpMatched($ip, $allowedRanges);
                 }
             }
         }
