@@ -176,7 +176,7 @@ class Config
      */
     public function getAllowedRanges()
     {
-        $ranges = $this->scopeConfig->getValue(self::XML_PATH_GENERAL_AUTHORIZED_IPS);
+        $ranges = $this->scopeConfig->getValue(self::XML_PATH_GENERAL_AUTHORIZED_IPS) ?? "";
         return preg_split('/\s*[,;]+\s*/', $ranges);
     }
 
