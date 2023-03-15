@@ -15,6 +15,7 @@ use MSP\DevTools\Api\RuleInterface;
 class RequestWith implements RuleInterface
 {
     private Http $http;
+    private RequestInterface $request;
 
     public function __construct(
         Http $http,
