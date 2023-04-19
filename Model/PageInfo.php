@@ -386,11 +386,18 @@ class PageInfo
                     continue;
                 }
 
+                $trace = '';
+                if ($query instanceof \MSP\DevTools\Profiler\Db\Db_Profiler_Query) {
+                    $trace = $query->getStacktrace();
+                }
+
                 $allQueries[] = [
                     'sql' => $query->getQuery(),
                     'time' => $query->getElapsedSecs(),
                     'grade' => 'medium',
+                    'trace' => $trace
                 ];
+
             }
         }
 
