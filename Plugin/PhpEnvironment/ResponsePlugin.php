@@ -28,7 +28,7 @@ use MSP\DevTools\Model\CanInjectCode;
 use MSP\DevTools\Model\Config;
 use MSP\DevTools\Model\IsInjectableContentType;
 use MSP\DevTools\Model\PageInfo;
-use Zend\Http\PhpEnvironment\Response;
+use Magento\Framework\HTTP\PhpEnvironment\Response;
 use Magento\Framework\Json\EncoderInterface;
 use MSP\DevTools\Model\ElementRegistry;
 use MSP\DevTools\Model\EventRegistry;
