@@ -56,6 +56,10 @@ class BlockProcessor
      */
     public function wrapBlock($html, $blockId, $name)
     {
+        if (!$html) {
+            return "";
+        }
+        
         if (trim($html)) {
             $html = '<!-- START_MSPDEV[' . $blockId . ']: ' . $name . ' -->' . $html
             . '<!-- END_MSPDEV[' . $blockId . ']: ' . $name . ' -->';
