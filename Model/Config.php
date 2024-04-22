@@ -95,7 +95,7 @@ class Config
     {
         $port = (int) $this->scopeConfig->getValue(self::XML_PATH_PHPSTORM_PORT);
         if (!$port) {
-            $port = 8091;
+            $port = 63342;
         }
         return $port;
     }
@@ -112,7 +112,7 @@ class Config
             return null;
         }
 
-        return 'http://127.0.0.1:' . $this->getPhpStormPort() . '?message=' . urlencode($file);
+        return 'http://127.0.0.1:' . $this->getPhpStormPort() . '/api/file?file=' . urlencode(ltrim($file, '/'));
     }
 
     /**
