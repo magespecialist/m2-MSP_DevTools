@@ -62,6 +62,14 @@ class ResponsePlugin
      */
     private $canInjectCode;
 
+    /**
+     * @var string[] Media types to exclude from profiling data injection
+     */
+    private $ignoreMediaTypes = [
+        'application/javascript',
+        'application/json'
+    ];
+
     public function __construct(
         EncoderInterface $encoder,
         ElementRegistry $elementRegistry,
@@ -85,6 +93,18 @@ class ResponsePlugin
         $res = $proceed();
         if ($this->canInjectCode->execute() && $this->isInjectableContentType->execute($subject)) {
             if ($subject instanceof HttpResponse) {
+                /**
+                 * Exit early when it's an ignored content type
+                 */
+                foreach($subject->getHeaders() as $header) {
+                    if($header instanceof \Laminas\Http\Header\ContentType) {
+                        if(in_array($header->getMediaType(), $this->ignoreMediaTypes)) {
+                            return $res;
+                        }
+                        else break;
+                    }
+                }
+
                 $this->elementRegistry->calcTimers();
                 $this->eventRegistry->calcTimers();
 
