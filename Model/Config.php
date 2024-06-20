@@ -56,7 +56,6 @@ class Config
         RemoteAddress $remoteAddress,
         DirectoryList $directoryList
     ) {
-
         $this->scopeConfig = $scopeConfig;
         $this->remoteAddress = $remoteAddress;
         $this->directoryList = $directoryList;
@@ -82,7 +81,7 @@ class Config
      *
      * @return boolean
      */
-    public function getPhpStormEnabled()
+    public function isPhpStormEnabled()
     {
         return (bool) $this->scopeConfig->getValue(self::XML_PATH_PHPSTORM_ENABLED);
     }
@@ -96,7 +95,7 @@ class Config
     {
         $port = (int) $this->scopeConfig->getValue(self::XML_PATH_PHPSTORM_PORT);
         if (!$port) {
-            $port = 8091;
+            $port = 63342;
         }
         return $port;
     }
@@ -109,11 +108,11 @@ class Config
      */
     public function getPhpStormUrl($file)
     {
-        if (!$this->getPhpStormEnabled()) {
+        if (!$this->isPhpStormEnabled()) {
             return null;
         }
 
-        return 'http://127.0.0.1:'.$this->getPhpStormPort().'?message='.urlencode($file);
+        return 'http://127.0.0.1:' . $this->getPhpStormPort() . '/api/file?file=' . urlencode(ltrim($file, '/'));
     }
 
     /**
@@ -121,7 +120,7 @@ class Config
      *
      * @return boolean
      */
-    public function getEnabled()
+    public function isEnabled()
     {
         if (null === $this->isEnabled) {
             $this->isEnabled = (bool) $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLED);
@@ -137,7 +136,7 @@ class Config
      * @param  $range
      * @return bool
      */
-    public function getIpInRange($ip, $range)
+    public function isIpInRange($ip, $range)
     {
         if (strpos($range, '/') === false) {
             $range .= '/32';
@@ -149,7 +148,7 @@ class Config
         $wildcardDecimal = pow(2, (32 - $netmask)) - 1;
         $netmaskDecimal = ~$wildcardDecimal;
 
-        return (bool) (($ipDecimal & $netmaskDecimal ) == ($rangeDecimal & $netmaskDecimal));
+        return (bool) (($ipDecimal & $netmaskDecimal) == ($rangeDecimal & $netmaskDecimal));
     }
 
     /**
@@ -159,10 +158,10 @@ class Config
      * @param  array $ranges
      * @return bool
      */
-    public function getIpIsMatched($ip, array $ranges)
+    public function isIpMatched($ip, array $ranges)
     {
         foreach ($ranges as $range) {
-            if ($this->getIpInRange($ip, $range)) {
+            if ($this->isIpInRange($ip, $range)) {
                 return true;
             }
         }
@@ -177,7 +176,7 @@ class Config
      */
     public function getAllowedRanges()
     {
-        $ranges = $this->scopeConfig->getValue(self::XML_PATH_GENERAL_AUTHORIZED_IPS);
+        $ranges = $this->scopeConfig->getValue(self::XML_PATH_GENERAL_AUTHORIZED_IPS) ?? "";
         return preg_split('/\s*[,;]+\s*/', $ranges);
     }
 
@@ -191,12 +190,12 @@ class Config
         if (null === $this->isActive) {
             $this->isActive = false; // Avoid recursion
 
-            if ((php_sapi_name() !== 'cli') && $this->getEnabled()) {
+            if ((php_sapi_name() !== 'cli') && $this->isEnabled()) {
                 $ip = $this->remoteAddress->getRemoteAddress();
                 $allowedRanges = $this->getAllowedRanges();
 
                 if (count($allowedRanges)) {
-                    $this->isActive = $this->getIpIsMatched($ip, $allowedRanges);
+                    $this->isActive = $this->isIpMatched($ip, $allowedRanges);
                 }
             }
         }

@@ -23,12 +23,12 @@ namespace MSP\DevTools\Model;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Interception\DefinitionInterface;
 use Magento\Framework\Interception\PluginList\PluginList;
 use Magento\Framework\Profiler\Driver\Standard\Stat;
 use Magento\Framework\View\DesignInterface;
 use Magento\Framework\View\LayoutInterface;
-use Magento\Framework\Interception\DefinitionInterface;
-use Magento\Framework\App\ResourceConnection;
 
 /**
  * Class PageInfo
@@ -317,7 +317,7 @@ class PageInfo
                                 'phpstorm_links' => [],
                             ];
 
-                            if ($this->config->getPhpStormEnabled()) {
+                            if ($this->config->isPhpStormEnabled()) {
                                 $plugins[$key]['phpstorm_links'] = [
                                     [
                                         'key' => 'Original Class',
@@ -326,7 +326,7 @@ class PageInfo
                                     ],
                                 ];
                             }
-                        };
+                        }
 
                         foreach ($pluginsNames as $pluginName) {
                             if (!empty($inherited[$type][$pluginName])) {
@@ -339,12 +339,12 @@ class PageInfo
                                 $plugins[$key]['plugins'][$pluginName] = [
                                     'order' => $sortOrder,
                                     'plugin' => $inherited[$type][$pluginName]['instance'],
-                                    'method' => $types[$keyType].ucfirst($method),
+                                    'method' => $types[$keyType] . ucfirst($method),
                                     'file' => $fileName,
                                 ];
-                                if ($this->config->getPhpStormEnabled()) {
+                                if ($this->config->isPhpStormEnabled()) {
                                     $plugins[$key]['phpstorm_links'][] = [
-                                        'key' => 'Plugin "'.$pluginName.'"',
+                                        'key' => 'Plugin "' . $pluginName . '"',
                                         'file' => $fileName,
                                         'link' => $this->config->getPhpStormUrl($fileName),
                                     ];
@@ -363,6 +363,7 @@ class PageInfo
      * Get a list of plugins
      * @return array
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     private function getSqlProfilerData()
     {

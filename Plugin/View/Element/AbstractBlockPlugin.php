@@ -63,6 +63,10 @@ class AbstractBlockPlugin
             return $proceed();
         }
 
+        if ($subject->getTemplate() === null) {
+            return $proceed();
+        }
+
         $name = $subject->getNameInLayout();
 
         $this->elementRegistry->start($name);

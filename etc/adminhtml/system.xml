@@ -48,7 +48,7 @@
 
             <group id="phpstorm" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                 <comment><![CDATA[
-                    <strong>NOTE:</strong> You need to install <strong>Remote Call</strong> Plugin in your PhpStorm.
+                    <strong>NOTE:</strong> You need to install <strong>IDE Remote Control</strong> Plugin in your PhpStorm.
                 ]]></comment>
                 <label>PhpStorm Integration</label>
                 <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

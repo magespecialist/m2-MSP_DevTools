@@ -38,8 +38,9 @@ class DevTools extends AbstractOutput
 
             foreach ($this->_getTimerIds($stat) as $timerId) {
                 $timerPath = explode(Profiler::NESTING_SEPARATOR, $stat->fetch($timerId, Stat::ID));
+                // phpcs:disable
                 $timerMageId = md5($stat->fetch($timerId, Stat::ID));
-
+                // phpcs:enable
                 $profilerInfo[$timerMageId] = [
                     // @codingStandardsIgnoreStart
                     'name' => $timerPath[count($timerPath) - 1],
@@ -61,8 +62,9 @@ class DevTools extends AbstractOutput
                 if (count($parentPath) > 1) {
                     // @codingStandardsIgnoreEnd
                     array_pop($parentPath);
+                    // phpcs:disable
                     $parentTimerId = md5(implode(Profiler::NESTING_SEPARATOR, $parentPath));
-
+                    // phpcs:enable
                     if (isset($profilerInfo[$parentTimerId])) {
                         $profilerInfo[$parentTimerId]['proper_time'] -= $timerInfo['time'];
                     }
@@ -70,8 +72,8 @@ class DevTools extends AbstractOutput
             }
 
             foreach ($profilerInfo as $timerId => $timerInfo) {
-                $profilerInfo[$timerId]['proper_time'] = intval(1000 * $profilerInfo[$timerId]['proper_time']);
-                $profilerInfo[$timerId]['time'] = intval(1000 * $profilerInfo[$timerId]['time']);
+                $profilerInfo[$timerId]['proper_time'] = (int) (1000 * $profilerInfo[$timerId]['proper_time']);
+                $profilerInfo[$timerId]['time'] = (int) (1000 * $profilerInfo[$timerId]['time']);
             }
 
             // @codingStandardsIgnoreStart
